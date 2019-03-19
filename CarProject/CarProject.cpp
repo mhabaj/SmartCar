@@ -12,7 +12,7 @@
 using namespace std;
 using namespace cv;
 
-const string Fenetre = "Class Reconnaissance de panneaux.";
+const string Fenetre = "Class Reconnaissance objets.";
 
 
 
@@ -22,8 +22,9 @@ class DetectionParCascade : public DetectionBasedTracker::IDetector
 
 private:
 	DetectionParCascade();
-	cv::Ptr<cv::CascadeClassifier> Detector;
+	Ptr<CascadeClassifier> Detector;
 	string StopClassifierTraining; //URL VERS LES DONNEES DE LENTRAINEMENT.
+	static int counter;
 public:
 
 	void getStopClassifierTraining(string StopClassifierTraining){
@@ -33,18 +34,18 @@ public:
 	DetectionParCascade(string StopClassifierTraining) {
 		this->StopClassifierTraining = StopClassifierTraining;
 	}
-	DetectionParCascade(cv::Ptr<cv::CascadeClassifier> detector) : IDetector(), Detector(detector)
+	DetectionParCascade(Ptr<CascadeClassifier> detector) : IDetector(), Detector(detector)
 	{
 		CV_Assert(detector);
 	}
 
-	void detect(const cv::Mat &Image, std::vector<cv::Rect> &objects) 
+	void detect(const Mat &Image, std::vector<Rect> &objects) 
 	{
 		Detector->detectMultiScale(Image, objects, scaleFactor, minNeighbours, 0, minObjSize, maxObjSize);
 	
 	}
 
-	boolean isVideoStreamOpened(VideoCapture VideoStream) {
+	bool isVideoStreamOpened(VideoCapture VideoStream) {
 		
 		if (!VideoStream.isOpened())
 		{
@@ -55,7 +56,19 @@ public:
 			return true;
 	}
 
-	void isObjectDetected() {
+
+
+	void action() {
+
+		counter = counter + 1;
+		printf("COUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT : %d\n", counter);
+
+	}
+
+
+
+
+	bool isObjectDetected() {
 
 		namedWindow(Fenetre);
 
@@ -66,20 +79,20 @@ public:
 			std::string fichierXmlCascadeStop = samples::findFile(this->StopClassifierTraining); 
 
 
-			cv::Ptr<cv::CascadeClassifier> cascade = makePtr<cv::CascadeClassifier>(fichierXmlCascadeStop); 
-			cv::Ptr<DetectionBasedTracker::IDetector> detect = makePtr<DetectionParCascade>(cascade);
+			Ptr<CascadeClassifier> cascade = makePtr<CascadeClassifier>(fichierXmlCascadeStop); 
+			Ptr<DetectionBasedTracker::IDetector> detect = makePtr<DetectionParCascade>(cascade);
 			if (cascade->empty())
 			{
 				printf("Erreur fichier Casscade %s\n", fichierXmlCascadeStop.c_str());
-				return 2;
+				return false;
 			}
 
-			cascade = makePtr<cv::CascadeClassifier>(fichierXmlCascadeStop);
-			cv::Ptr<DetectionBasedTracker::IDetector> DetecteurTrack = makePtr<DetectionParCascade>(cascade);
+			cascade = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
+			Ptr<DetectionBasedTracker::IDetector> DetecteurTrack = makePtr<DetectionParCascade>(cascade);
 			if (cascade->empty())
 			{
 				printf("Error: Erreur donnees cascade %s\n", fichierXmlCascadeStop.c_str());
-				return 2;
+				return false;
 			}
 
 			DetectionBasedTracker::Parameters params;
@@ -88,7 +101,7 @@ public:
 			if (!Detector.run())
 			{
 				printf("Erreur lancement detecteur\n");
-				return 3;
+				return false;
 			}
 
 			Mat RFrame; //referencee
@@ -101,11 +114,12 @@ public:
 				cvtColor(RFrame, WFrame, COLOR_BGR2GRAY);
 				Detector.process(WFrame);
 				Detector.getObjects(PanneauxStop);
-
+				//distance=vitesse/temps
 				for (size_t i = 0; i < PanneauxStop.size(); i++)
 				{
 					rectangle(RFrame, PanneauxStop[i], Scalar(0, 100, 0));
-
+				//	cv::Rect rr ;
+					action();
 				}
 
 				imshow(Fenetre, RFrame);
@@ -113,7 +127,7 @@ public:
 			} while (waitKey(30) < 0);
 
 			Detector.stop();
-			return 4;
+			return true;
 		}
 	}
 
@@ -122,8 +136,9 @@ public:
 	{}
 };
 
+int DetectionParCascade::counter = 0;
 
-
+/*
 class Vehicule {
 
 private:
@@ -148,8 +163,8 @@ public:
 
 
 
-
-
+*/
+/*
 class CarDecision {
 private:
 	Vehicule v1;
@@ -159,29 +174,24 @@ public :
 	CarDecision(Vehicule v1, DetectionParCascade SignalStop, DetectionParCascade SignalFeux);
 
 };
-
+*/
+/*
 CarDecision::CarDecision(Vehicule v1, DetectionParCascade SignalStop, DetectionParCascade SignalFeux) {
 	this->v1 = v1;
 	this->SignalStop = SignalStop;
 	this->SignalFeux = SignalFeux;
 }
-
+*/
 
 
 int main()
 {
 	string StopTrainPATH = "C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml";
 
-	DetectionParCascade::startStopRec(StopTrainPATH);
+	DetectionParCascade StopDetect(StopTrainPATH);
 
-	if (DetectionParCascade::startStopRec(StopTrainPATH) == 4) {
-
-		cout << "PANNEAU STOP DETECTEE" << endl;
-		
-
-
-
-	}
+	StopDetect.isObjectDetected();
+	
 	
 }
 
