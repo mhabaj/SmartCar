@@ -1,3 +1,9 @@
 ﻿  CarProject.cpp
-d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(132): warning C4715: 'DetectionParCascade::isObjectDetected': not all control paths return a value
-  CarProject.vcxproj -> D:\MEGA\BACKKKKKKUPPP\backup USB 2Go noir\FAC\2eme année\4eme semestre\C++\Project\code\CarProject\SmartCar\x64\Debug\CarProject.exe
+d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(190): error C2259: 'DetectionParCascade': cannot instantiate abstract class
+  d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(190): note: due to following members:
+  d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(190): note: 'void cv::DetectionBasedTracker::IDetector::detect(const cv::Mat &,std::vector<cv::Rect,std::allocator<_Ty>> &)': is abstract
+          with
+          [
+              _Ty=cv::Rect
+          ]
+  c:\opencv4\opencv4\install\include\opencv2\objdetect\detection_based_tracker.hpp(78): note: see declaration of 'cv::DetectionBasedTracker::IDetector::detect'

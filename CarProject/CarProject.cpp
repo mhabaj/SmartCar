@@ -8,14 +8,9 @@
 #include <stdio.h>
 #include <iostream>
 #include <stdbool.h>
-
 using namespace std;
 using namespace cv;
-
 const string Fenetre = "Class Reconnaissance objets.";
-
-
-
 
 class DetectionParCascade : public DetectionBasedTracker::IDetector
 {
@@ -23,28 +18,24 @@ class DetectionParCascade : public DetectionBasedTracker::IDetector
 private:
 	DetectionParCascade();
 	Ptr<CascadeClassifier> Detector;
-	string StopClassifierTraining; //URL VERS LES DONNEES DE LENTRAINEMENT.
+	string ClassifierTraining; //URL VERS LES DONNEES DE LENTRAINEMENT.
 	static int counter;
 public:
 
-	void getStopClassifierTraining(string StopClassifierTraining){
-		this->StopClassifierTraining = StopClassifierTraining;
-	}
-
-	DetectionParCascade(string StopClassifierTraining) {
-		this->StopClassifierTraining = StopClassifierTraining;
-	}
-	DetectionParCascade(Ptr<CascadeClassifier> detector) : IDetector(), Detector(detector)
+	DetectionParCascade(Ptr<CascadeClassifier> detector) : IDetector(), Detector(detector) 
 	{
 		CV_Assert(detector);
+	} 
+	DetectionParCascade(string ClassifierTraining) {
+		getClassifierTraining(ClassifierTraining);
 	}
 
+	//detectMultiScale permet de retourner les objets trouvees sous une liste de rectangles.
 	void detect(const Mat &Image, std::vector<Rect> &objects) 
 	{
 		Detector->detectMultiScale(Image, objects, scaleFactor, minNeighbours, 0, minObjSize, maxObjSize);
 	
 	}
-
 	bool isVideoStreamOpened(VideoCapture VideoStream) {
 		
 		if (!VideoStream.isOpened())
@@ -54,6 +45,9 @@ public:
 		}
 		else
 			return true;
+	}
+	void getClassifierTraining(string ClassifierTraining){
+		this->ClassifierTraining = ClassifierTraining;
 	}
 
 
@@ -76,22 +70,22 @@ public:
 
 		if (isVideoStreamOpened(VideoStream)) {
 			//on include le .XML de l'entrainement
-			std::string fichierXmlCascadeStop = samples::findFile(this->StopClassifierTraining); 
+			std::string fichierXmlCascade = samples::findFile(this->ClassifierTraining); 
 
-
-			Ptr<CascadeClassifier> cascade = makePtr<CascadeClassifier>(fichierXmlCascadeStop); 
+			//pointeur sur objet CascadeClassifier :
+			Ptr<CascadeClassifier> cascade = makePtr<CascadeClassifier>(fichierXmlCascade); 
 			Ptr<DetectionBasedTracker::IDetector> detect = makePtr<DetectionParCascade>(cascade);
 			if (cascade->empty())
 			{
-				printf("Erreur fichier Casscade %s\n", fichierXmlCascadeStop.c_str());
+				printf("Erreur fichier Casscade %s\n", fichierXmlCascade.c_str());
 				return false;
 			}
 
-			cascade = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
+			cascade = makePtr<CascadeClassifier>(fichierXmlCascade);
 			Ptr<DetectionBasedTracker::IDetector> DetecteurTrack = makePtr<DetectionParCascade>(cascade);
 			if (cascade->empty())
 			{
-				printf("Error: Erreur donnees cascade %s\n", fichierXmlCascadeStop.c_str());
+				printf("Error: Erreur donnees cascade %s\n", fichierXmlCascade.c_str());
 				return false;
 			}
 
@@ -106,19 +100,18 @@ public:
 
 			Mat RFrame; //referencee
 			Mat WFrame;
-			vector<Rect> PanneauxStop;
+			vector<Rect> ObjetDetectee;
 
 			do
 			{
 				VideoStream >> RFrame;
 				cvtColor(RFrame, WFrame, COLOR_BGR2GRAY);
 				Detector.process(WFrame);
-				Detector.getObjects(PanneauxStop);
+				Detector.getObjects(ObjetDetectee);
 				//distance=vitesse/temps
-				for (size_t i = 0; i < PanneauxStop.size(); i++)
+				for (size_t i = 0; i < ObjetDetectee.size(); i++)
 				{
-					rectangle(RFrame, PanneauxStop[i], Scalar(0, 100, 0));
-				//	cv::Rect rr ;
+					rectangle(RFrame, ObjetDetectee[i], Scalar(0, 100, 0));
 					action();
 				}
 
@@ -136,7 +129,7 @@ public:
 	{}
 };
 
-int DetectionParCascade::counter = 0;
+
 
 /*
 class Vehicule {
@@ -183,7 +176,7 @@ CarDecision::CarDecision(Vehicule v1, DetectionParCascade SignalStop, DetectionP
 }
 */
 
-
+int DetectionParCascade::counter = 0;
 int main()
 {
 	string StopTrainPATH = "C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml";
