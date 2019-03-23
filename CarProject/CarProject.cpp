@@ -1,134 +1,163 @@
 
-#include <opencv2/imgproc.hpp>  // Blur gauss (cf livre)
-#include <opencv2/core.hpp>        //  Mat, Scalar
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>  // OpenCV
-#include <opencv2/features2d.hpp>
-#include <opencv2/objdetect.hpp>
-#include <stdio.h>
+#include "opencv2/objdetect.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+#include <fstream>
 #include <iostream>
-#include <stdbool.h>
+#include <filesystem>
+#include <windows.h>
 using namespace std;
 using namespace cv;
-const string Fenetre = "Class Reconnaissance objets.";
 
-class DetectionParCascade : public DetectionBasedTracker::IDetector
+class ObjectScanner 
 {
 
 private:
-	DetectionParCascade();
-	Ptr<CascadeClassifier> Detector;
-	string ClassifierTraining; //URL VERS LES DONNEES DE LENTRAINEMENT.
-	static int counter;
+
+	const string CascadePanneauStop_XML="C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml";
+	const string CascadeFeuVert_XML="C:/Users/mhaba/OneDrive/Desktop/FeuxDeCirculation.xml";
+	const string CascadeFeuRouge_XML="C:/Users/mhaba/OneDrive/Desktop/FeuxDeCirculation.xml";
+	const string videoSourceURL = "http://192.168.0.26:8080/video/jpeg";
+	CascadeClassifier CascadePanneauStop, CascadeFeuVert, CascadeFeuRouge;
+	VideoCapture VideoSource;
+	Mat frame, frame_gray;
+	vector<Rect> PanneauStopVec, FeuVertVec, FeuRougeVec;
+
+
+
 public:
-
-	DetectionParCascade(Ptr<CascadeClassifier> detector) : IDetector(), Detector(detector) 
-	{
-		CV_Assert(detector);
-	} 
-	DetectionParCascade(string ClassifierTraining) {
-		getClassifierTraining(ClassifierTraining);
-	}
-
-	//detectMultiScale permet de retourner les objets trouvees sous une liste de rectangles.
-	void detect(const Mat &Image, std::vector<Rect> &objects) 
-	{
-		Detector->detectMultiScale(Image, objects, scaleFactor, minNeighbours, 0, minObjSize, maxObjSize);
+	ObjectScanner();
+	void sceneScan();
+	bool XmlExist(string URL);
+	bool cameraTest(VideoCapture videoSource);
+	void detectAndDisplay(Mat frame);
 	
-	}
-	bool isVideoStreamOpened(VideoCapture VideoStream) {
-		
-		if (!VideoStream.isOpened())
-		{
-			printf("Erreur Camera\n");
-			return false;
-		}
-		else
-			return true;
-	}
-	void getClassifierTraining(string ClassifierTraining){
-		this->ClassifierTraining = ClassifierTraining;
-	}
 
-
-
-	void action() {
-
-		counter = counter + 1;
-		printf("COUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT\nCOUNT : %d\n", counter);
-
-	}
-
-
-
-
-	bool isObjectDetected() {
-
-		namedWindow(Fenetre);
-
-		VideoCapture VideoStream(0);
-
-		if (isVideoStreamOpened(VideoStream)) {
-			//on include le .XML de l'entrainement
-			std::string fichierXmlCascade = samples::findFile(this->ClassifierTraining); 
-
-			//pointeur sur objet CascadeClassifier :
-			Ptr<CascadeClassifier> cascade = makePtr<CascadeClassifier>(fichierXmlCascade); 
-			Ptr<DetectionBasedTracker::IDetector> detect = makePtr<DetectionParCascade>(cascade);
-			if (cascade->empty())
-			{
-				printf("Erreur fichier Casscade %s\n", fichierXmlCascade.c_str());
-				return false;
-			}
-
-			cascade = makePtr<CascadeClassifier>(fichierXmlCascade);
-			Ptr<DetectionBasedTracker::IDetector> DetecteurTrack = makePtr<DetectionParCascade>(cascade);
-			if (cascade->empty())
-			{
-				printf("Error: Erreur donnees cascade %s\n", fichierXmlCascade.c_str());
-				return false;
-			}
-
-			DetectionBasedTracker::Parameters params;
-			DetectionBasedTracker Detector(detect, DetecteurTrack, params);
-
-			if (!Detector.run())
-			{
-				printf("Erreur lancement detecteur\n");
-				return false;
-			}
-
-			Mat RFrame; //referencee
-			Mat WFrame;
-			vector<Rect> ObjetDetectee;
-
-			do
-			{
-				VideoStream >> RFrame;
-				cvtColor(RFrame, WFrame, COLOR_BGR2GRAY);
-				Detector.process(WFrame);
-				Detector.getObjects(ObjetDetectee);
-				//distance=vitesse/temps
-				for (size_t i = 0; i < ObjetDetectee.size(); i++)
-				{
-					rectangle(RFrame, ObjetDetectee[i], Scalar(0, 100, 0));
-					action();
-				}
-
-				imshow(Fenetre, RFrame);
-
-			} while (waitKey(30) < 0);
-
-			Detector.stop();
-			return true;
-		}
-	}
-
-
-	virtual ~DetectionParCascade() 
-	{}
 };
 
+ObjectScanner::ObjectScanner()
+{
+}
+
+void ObjectScanner::sceneScan()
+{
+
+	if (CascadePanneauStop.load(this->CascadePanneauStop_XML) &&
+		CascadeFeuVert.load(CascadeFeuVert_XML) &&
+		CascadeFeuRouge.load(CascadeFeuRouge_XML))
+	{
+
+
+
+		this->VideoSource.open(0);
+
+		Sleep(1000);
+
+		if (this->VideoSource.isOpened()) {
+			cout << "CAMERA OUVERTE" << endl;
+
+			while (this->VideoSource.read(this->frame)) {
+				cout << "FRAME READ SUCCES" << endl;
+
+				if (!this->frame.empty()) {
+					cout << "FRAME NON VIDE SUCCES" << endl;
+					detectAndDisplay(frame);
+					//on applique les filtres:
+					/*cvtColor(this->frame, frame_gray, COLOR_BGR2GRAY);
+					equalizeHist(frame_gray, frame_gray);
+					cout << "FILTRES APPLIQUEES AVEC SUCCES" << endl;
+
+
+					CascadePanneauStop.detectMultiScale(frame_gray, this->PanneauStopVec);
+					cout << "DETECTMULTISCAKE AVEC SUCCES" << endl;
+
+					
+					for (size_t i = 0; i < this->PanneauStopVec.size(); i++) {
+
+						Point center(this->PanneauStopVec[i].x + this->PanneauStopVec[i].width / 2, this->PanneauStopVec[i].y + this->PanneauStopVec[i].height / 2);
+						ellipse(this->frame, center, Size(this->PanneauStopVec[i].width / 2, this->PanneauStopVec[i].height / 2), 0, 0, 360, Scalar(255, 0, 255), 4);
+
+						Mat faceROI = frame_gray(this->PanneauStopVec[i]);
+
+					}
+
+					
+
+					//CascadeFeuVert.detectMultiScale(frame_gray, this->FeuVertVec);
+					//CascadeFeuRouge.detectMultiScale(frame_gray, this->FeuRougeVec);
+
+
+					imshow("Capture - Face detection", this->frame);
+*/
+
+
+
+				}
+
+
+
+			}
+
+
+
+
+		}
+
+	}
+
+
+}
+
+void ObjectScanner:: detectAndDisplay( Mat frame )
+{
+    Mat frame_gray;
+    cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
+    equalizeHist( frame_gray, frame_gray );
+
+    //-- Detect faces
+    std::vector<Rect> faces;
+	this->CascadePanneauStop.detectMultiScale( frame_gray, faces );
+
+    for ( size_t i = 0; i < faces.size(); i++ )
+    {
+        Point center( faces[i].x + faces[i].width/2, faces[i].y + faces[i].height/2 );
+        ellipse( frame, center, Size( faces[i].width/2, faces[i].height/2 ), 0, 0, 360, Scalar( 255, 0, 255 ), 4 );
+
+        Mat faceROI = frame_gray( faces[i] );
+		/*
+        //-- In each face, detect eyes
+        std::vector<Rect> eyes;
+		this->CascadePanneauStop.detectMultiScale( faceROI, eyes );
+
+        for ( size_t j = 0; j < eyes.size(); j++ )
+        {
+            Point eye_center( faces[i].x + eyes[j].x + eyes[j].width/2, faces[i].y + eyes[j].y + eyes[j].height/2 );
+            int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
+            circle( frame, eye_center, radius, Scalar( 255, 0, 0 ), 4 );
+        }
+		*/
+    }
+
+    //-- Show what you got
+    imshow( "Capture - Face detection", frame );
+}
+bool ObjectScanner:: XmlExist(string URL) {
+	ifstream Fichier;
+
+	Fichier.open(URL);
+	if (Fichier.fail()) {
+		cout << "Erreur chargement fichier XML" << endl;
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+bool ObjectScanner::cameraTest(VideoCapture videoSource)
+{
+	return false;
+}
 
 
 /*
@@ -175,19 +204,104 @@ CarDecision::CarDecision(Vehicule v1, DetectionParCascade SignalStop, DetectionP
 	this->SignalFeux = SignalFeux;
 }
 */
+/** Function Headers */
+void detectAndDisplay(Mat frame);
 
-int DetectionParCascade::counter = 0;
-int main()
+/** Global variables */
+CascadeClassifier face_cascade;
+CascadeClassifier eyes_cascade;
+
+
+/** @function main */
+
+int main(int argc, const char** argv)
 {
-	string StopTrainPATH = "C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml";
+	CommandLineParser parser(argc, argv,
+		"{help h||}"
+		"{face_cascade|C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml|Path to face cascade.}"
+		"{eyes_cascade|C:/OpenCV4/opencv-master/data/haarcascades/haarcascade_eye_tree_eyeglasses.xml|Path to eyes cascade.}"
+		"{camera|0|Camera device number.}");
 
-	DetectionParCascade StopDetect(StopTrainPATH);
+	parser.about("\nThis program demonstrates using the cv::CascadeClassifier class to detect objects (Face + eyes) in a video stream.\n"
+		"You can use Haar or LBP features.\n\n");
+	parser.printMessage();
 
-	StopDetect.isObjectDetected();
-	
-	
+	String face_cascade_name = parser.get<String>("face_cascade");
+	String eyes_cascade_name = parser.get<String>("eyes_cascade");
+
+	//-- 1. Load the cascades
+	if (!face_cascade.load(face_cascade_name))
+	{
+		cout << "--(!)Error loading face cascade\n";
+		return -1;
+	};
+	if (!eyes_cascade.load(eyes_cascade_name))
+	{
+		cout << "--(!)Error loading eyes cascade\n";
+		return -1;
+	};
+
+	int camera_device = parser.get<int>("camera");
+	VideoCapture capture;
+	//-- 2. Read the video stream
+	capture.open(camera_device);
+	if (!capture.isOpened())
+	{
+		cout << "--(!)Error opening video capture\n";
+		return -1;
+	}
+
+	Mat frame;
+	while (capture.read(frame))
+	{
+		if (frame.empty())
+		{
+			cout << "--(!) No captured frame -- Break!\n";
+			break;
+		}
+
+		//-- 3. Apply the classifier to the frame
+		detectAndDisplay(frame);
+
+		if (waitKey(10) == 27)
+		{
+			break; // escape
+		}
+	}
+	return 0;
 }
 
+/** @function detectAndDisplay */
+void detectAndDisplay(Mat frame)
+{
+	Mat frame_gray;
+	cvtColor(frame, frame_gray, COLOR_BGR2GRAY);
+	equalizeHist(frame_gray, frame_gray);
 
+	//-- Detect faces
+	std::vector<Rect> faces;
+	face_cascade.detectMultiScale(frame_gray, faces);
 
+	for (size_t i = 0; i < faces.size(); i++)
+	{
+		Point center(faces[i].x + faces[i].width / 2, faces[i].y + faces[i].height / 2);
+		ellipse(frame, center, Size(faces[i].width / 2, faces[i].height / 2), 0, 0, 360, Scalar(255, 0, 255), 4);
+
+		Mat faceROI = frame_gray(faces[i]);
+
+		//-- In each face, detect eyes
+		std::vector<Rect> eyes;
+		eyes_cascade.detectMultiScale(faceROI, eyes);
+
+		for (size_t j = 0; j < eyes.size(); j++)
+		{
+			Point eye_center(faces[i].x + eyes[j].x + eyes[j].width / 2, faces[i].y + eyes[j].y + eyes[j].height / 2);
+			int radius = cvRound((eyes[j].width + eyes[j].height)*0.25);
+			circle(frame, eye_center, radius, Scalar(255, 0, 0), 4);
+		}
+	}
+
+	//-- Show what you got
+	imshow("Capture - Face detection", frame);
+}
 
