@@ -21,8 +21,5 @@
     <ClCompile Include="SocketServ.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="SocketClient.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

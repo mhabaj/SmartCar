@@ -38,18 +38,18 @@ private:
 
 
 public:
-	
+
 	CarSocket() {
 
 	}
 
-	void  initSoc() {
+	int  initSoc() {
 
-		// Initialize Winsock
+		
 		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (iResult != 0) {
 			printf("Erreur initialisation Socket WSA : %d\n", iResult);
-			
+			return 1;
 		}
 
 		//les params de la socket:
@@ -64,6 +64,7 @@ public:
 		if (iResult != 0) {
 			printf("erreur dans la fonction getaddrinfo: %d\n", iResult);
 			WSACleanup();
+			return 1;
 		}
 
 		// Creation de socket:
@@ -72,6 +73,7 @@ public:
 			printf("socket failed with error: %ld\n", WSAGetLastError());
 			freeaddrinfo(result);
 			WSACleanup();
+			return 1;
 		}
 
 		// Initialisation du protocole TCP du Socket:
@@ -81,6 +83,7 @@ public:
 			freeaddrinfo(result);
 			closesocket(ListenSocket);
 			WSACleanup();
+			return 1;
 		}
 
 		freeaddrinfo(result);
@@ -90,6 +93,7 @@ public:
 			printf("Erreur listen(): %d\n", WSAGetLastError());
 			closesocket(ListenSocket);
 			WSACleanup();
+			return 1;
 		}
 
 		// Lors qu'un client tent de se connecter:
@@ -98,41 +102,54 @@ public:
 			printf("accept failed with error: %d\n", WSAGetLastError());
 			closesocket(ListenSocket);
 			WSACleanup();
+			return 1;
 		}
+
 		// On met la socket en Attente
-		closesocket(ListenSocket);		
+		closesocket(ListenSocket);
+		return 0;
 	}
 
 	string msgRecu() {
 
-		// On recoit jusqu'a la fin du msg envoyee par le client
-		this->iResult = recv(this->ClientSocket, this->recvbuf, this->recvbuflen, 0);
-			string msg;
+
+			this->iResult = recv(this->ClientSocket, this->recvbuf, this->recvbuflen, 0);
 
 			if (this->iResult > 0)
 			{
+				string msg;
 
 				for (int i = 0; i < this->iResult; i++)
 				{
 					msg += this->recvbuf[i];
 				}
-				cout << "msg recu: " << msg << endl;
+				//cout << "msg recu: " << msg << endl;
+
+			//	closesocket(ClientSocket);
 				return msg;
 
 			}
+			else if (iResult == 0)
+				printf("Connection closing...\n");
+			else {
+				printf("recv failed with error: %d\n", WSAGetLastError());
+				closesocket(ClientSocket);
+				WSACleanup();
+			}
 
 		
+
 	}
 
 	void msgEnvoi(int msg) {
 
-		char envoiebuff[1] = {msg};
+		char envoiebuff[1] = { msg };
 		// On recoit jusqu'a la fin du msg envoyee par le client
 		do
 		{
 			// Echo the buffer back to the sender
 			iSendResult = send(ClientSocket, envoiebuff, iResult, 0);
-				//closesocket(ClientSocket);
+			//closesocket(ClientSocket);
 		} while (this->iResult > 0);
 	}
 
@@ -159,19 +176,22 @@ int main(void)
 {
 
 	CarSocket Soc1;
-	Soc1.initSoc();
-	int send ;
+	while (Soc1.initSoc() == 0) 
+	{
 
-	while (1) {
+		string s;
+		while (1) 
+		{
+			s=Soc1.msgRecu();
+			cout << "String recu:  " << s << endl;
+		}
 
-	cin >> send;
-	Soc1.msgEnvoi(send);
 	}
 	
-	cout << "String envoyee: " <<send<< endl;
-	
-	
-	//Soc1.~CarSocket();
+
+
+
+	Soc1.~CarSocket();
 
 	return 0;
 }

@@ -155,7 +155,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CarProject.cpp" />
-    <ClCompile Include="SocketClient.cpp" />
     <ClCompile Include="SocketServ.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
