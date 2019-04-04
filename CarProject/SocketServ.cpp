@@ -15,7 +15,6 @@
 #pragma comment (lib, "Mswsock.lib")
 
 #define DEFAULT_BUFLEN 255
-//#define DEFAULT_PORT "27015"
 
 using namespace std;
 
@@ -35,7 +34,6 @@ private:
 
 	int iSendResult;
 	char recvbuf[DEFAULT_BUFLEN];
-	//string msg_recu(recvbuf);
 	int recvbuflen = DEFAULT_BUFLEN;
 
 
@@ -127,11 +125,7 @@ public:
 				{
 					msg += this->recvbuf[i];
 				}
-				//Sleep(3000); // Note uppercase S
-
-					//cout << "msg recu: " << msg << endl;
-
-			//	closesocket(ClientSocket);
+				
 
 				return msg;
 
@@ -151,12 +145,12 @@ public:
 	}
 
 	void msgEnvoi(int msg) {
-
+		//le message sera 1 ou 2 ou 3 donc char[1]
 		char envoiebuff[1] = { msg };
 		// On recoit jusqu'a la fin du msg envoyee par le client
 		do
 		{
-			// Echo the buffer back to the sender
+			// on Envoie le message
 			iSendResult = send(ClientSocket, envoiebuff, iResult, 0);
 			//closesocket(ClientSocket);
 		} while (this->iResult > 0);
@@ -179,9 +173,10 @@ public:
 int main(void)
 {
 	string portRecv = "27015";
-	string portSend = "27016";
 	CarServerSocket SocRecv(portRecv);
-	CarServerSocket SocSend(portSend);
+	
+	//string portSend = "27016";
+	//CarServerSocket SocSend(portSend);
 
 	while (SocRecv.initSoc() == 0) 
 	{
@@ -195,10 +190,6 @@ int main(void)
 		}
 
 	}
-
-	
-
-
 
 	SocRecv.~CarServerSocket();
 
