@@ -6,8 +6,22 @@
 #include <iostream>
 #include <filesystem>
 #include <windows.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <winsock.h>
+#pragma comment(lib, "WS2_32.lib")
+
+
+
+
+
 using namespace std;
 using namespace cv;
+
+
 class ObjectScanner 
 {
 
@@ -16,15 +30,14 @@ private:
 	const string CascadePanneauStop_XML="C:/Users/mhaba/OneDrive/Desktop/FeuxDeCirculation.xml";
 	const string CascadeFeuVert_XML="C:/Users/mhaba/OneDrive/Desktop/FeuxDeCirculation.xml";
 	const string CascadeFeuRouge_XML="C:/Users/mhaba/OneDrive/Desktop/FeuxDeCirculation.xml";
-	const string videoSourceURL = "http://192.168.0.26:8080/video/jpeg";
+	//const string videoSourceURL = "http://192.168.0.26:8080/video/jpeg";
+	//const string videoSourceURL = "http://192.168.43.103:8081/";
 	CascadeClassifier CascadePanneauStop, CascadeFeuVert, CascadeFeuRouge;
-	VideoCapture VideoSource;
+	cv::VideoCapture VideoSource;
 	vector<Rect> PanneauStopVec, FeuVertVec, FeuRougeVec;
 	bool isStop;
 	bool isGreen ;
 	bool isRed ;
-
-
 
 public:
 	ObjectScanner();
@@ -37,8 +50,6 @@ public:
 ObjectScanner::ObjectScanner()
 {
 }
-
-
 
 int ObjectScanner::sceneScan()
 {
@@ -81,6 +92,7 @@ int ObjectScanner::sceneScan()
 			"," << this->FeuRougeVec.size() << endl;
 		
 		
+
 		returnFoundObjects(frame_resized, Gray_Transform);
 		
 		// Ctrl C pour quitter
@@ -108,7 +120,8 @@ int ObjectScanner::sceneScan()
 void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 {
 		//LE SOURCE DE LAG : cvtColor FONCTION POUR TRANSFORMER LIMAGE EN NIVEAUX DE GRIS
-		cvtColor(frame, Gray_Transformed, COLOR_RGB2GRAY);
+	//this->VideoSource >> frame;
+	cvtColor(frame, Gray_Transformed, COLOR_RGB2GRAY);
 		
 	// DETECT MULTISCALE POUR LES STOPS 
 	this->CascadePanneauStop.detectMultiScale(Gray_Transformed, this->PanneauStopVec);
@@ -121,6 +134,7 @@ void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 	}
 
 	// DETECT MULTISCALE POUR LES FEUX VERTS 
+	/*
 	this->CascadePanneauStop.detectMultiScale(Gray_Transformed, this->FeuVertVec);
 
 	for (size_t i = 0; i < this->FeuVertVec.size(); i++)
@@ -128,7 +142,7 @@ void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 		rectangle(frame, this->FeuVertVec[i], Scalar(0, 100, 0));
 
 	}
-
+	
 
 	// DETECT MULTISCALE POUR LES FEUX ROUGES 
 	this->CascadePanneauStop.detectMultiScale(Gray_Transformed, this->FeuRougeVec);
@@ -138,69 +152,118 @@ void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 		rectangle(frame, this->FeuRougeVec[i], Scalar(0, 100, 0));
 
 	}
-
+	*/
 	imshow("", frame);
 		
 }
 
-bool ObjectScanner::returnIsStop()
-{
-	return this->isStop;
-}
 
+/*
+int main() {
+	WSADATA wsaData;
+	int iResult;
 
+	// Initialize Winsock
+	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (iResult != 0) {
+		printf("WSAStartup failed: %d\n", iResult);
+		return 1;
+	}
 
-void main()
-{
-	ObjectScanner obj1;
 	
 
-	if (obj1.sceneScan()==3) {
 
-		cout << "ATTNETION STOP" << endl;
+	return 0;
+}
+*/
+//int main()
+//{
+
+
+	/*
+	ObjectScanner obj1;
+	
+	int foundObj = obj1.sceneScan();
+	if (foundObj ==3) {
+
+		cout << "STOP DETECTEE" << endl;
 	}
-	if (obj1.sceneScan() == 4) {
+	if (foundObj == 4) {
 
 		cout << "FEUX VERT" << endl;
 	}
-	if (obj1.sceneScan() == 3) {
+	if (foundObj == 5) {
 
 		cout << "FEUX ROUGE" << endl;
 	}
 	
-}
+	*/
+
+//return 0;
+//}
 
 
 
 
-
-
-/*
 class Vehicule {
 
 private:
 
-	int speed;
+	float speed;
 	int Motor_1, Motor_2;
 	int servo;
 
 
 public:
-	Vehicule(int Motor_1,int Motor2);
-	void veh_forward();
-	void veh_backward();
-	void veh_right();
-	void veh_left();
-	void veh_stop();
-
-
-
-
+	//10 forward, 11 backward, 12 right, 13 left, 0 stop
+	Vehicule();
+	int forward();
+	int backward();
+	int right();
+	int left();
+	int stop();
+	void getSpeed(float speed);
+	
 };
 
+Vehicule::Vehicule()
+{
+}
+
+int  Vehicule::forward()
+{
+	return 10;
+}
+
+int Vehicule::backward()
+{
+	return 11;
+}
+
+int Vehicule::right()
+{
+	return 12;
+}
+
+int Vehicule::left()
+{
+	return 13;
+}
+
+int Vehicule::stop()
+{
+	return 0;
+}
+
+void Vehicule::getSpeed(float speed)
+{
+	this->speed = speed;
+}
 
 
-*/
+
+
+
 /*
 class CarDecision {
 private:
@@ -219,4 +282,5 @@ CarDecision::CarDecision(Vehicule v1, DetectionParCascade SignalStop, DetectionP
 	this->SignalFeux = SignalFeux;
 }
 */
+
 
