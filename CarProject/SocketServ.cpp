@@ -9,17 +9,19 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
+#include <cstring>
+
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
 
 #define DEFAULT_BUFLEN 255
-#define DEFAULT_PORT "27015"
+//#define DEFAULT_PORT "27015"
 
 using namespace std;
 
 
 
-class CarSocket {
+class CarServerSocket {
 
 private:
 	WSADATA wsaData;
@@ -27,7 +29,7 @@ private:
 
 	SOCKET ListenSocket = INVALID_SOCKET;
 	SOCKET ClientSocket = INVALID_SOCKET;
-
+	char* DEFAULT_PORT;
 	struct addrinfo *result = NULL;
 	struct addrinfo hints;
 
@@ -39,8 +41,10 @@ private:
 
 public:
 
-	CarSocket() {
-
+	CarServerSocket(string DEFAULT_PORT) {
+		char * cstr = new char[DEFAULT_PORT.length() + 1];
+		strcpy_s(cstr, 6 ,DEFAULT_PORT.c_str());
+		this->DEFAULT_PORT = cstr;
 	}
 
 	int  initSoc() {
@@ -123,18 +127,23 @@ public:
 				{
 					msg += this->recvbuf[i];
 				}
-				//cout << "msg recu: " << msg << endl;
+				//Sleep(3000); // Note uppercase S
+
+					//cout << "msg recu: " << msg << endl;
 
 			//	closesocket(ClientSocket);
+
 				return msg;
 
 			}
 			else if (iResult == 0)
 				printf("Connection closing...\n");
+
 			else {
 				printf("recv failed with error: %d\n", WSAGetLastError());
 				closesocket(ClientSocket);
 				WSACleanup();
+
 			}
 
 		
@@ -157,13 +166,8 @@ public:
 		return this->iResult;
 	}
 
-	~CarSocket() {
-		iResult = shutdown(ClientSocket, SD_SEND);
-		if (iResult == SOCKET_ERROR) {
-			printf("Erreur Destructeur %d\n", WSAGetLastError());
-			closesocket(ClientSocket);
-			WSACleanup();
-		}
+	~CarServerSocket() {
+		
 		closesocket(ClientSocket);
 		WSACleanup();
 		cout << "SocketDetruit" << endl;
@@ -174,24 +178,29 @@ public:
 
 int main(void)
 {
+	string portRecv = "27015";
+	string portSend = "27016";
+	CarServerSocket SocRecv(portRecv);
+	CarServerSocket SocSend(portSend);
 
-	CarSocket Soc1;
-	while (Soc1.initSoc() == 0) 
+	while (SocRecv.initSoc() == 0) 
 	{
 
 		string s;
 		while (1) 
 		{
-			s=Soc1.msgRecu();
+
+			s= SocRecv.msgRecu();
 			cout << "String recu:  " << s << endl;
 		}
 
 	}
+
 	
 
 
 
-	Soc1.~CarSocket();
+	SocRecv.~CarServerSocket();
 
 	return 0;
 }
