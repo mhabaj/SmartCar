@@ -1,4 +1,4 @@
-/* <stdio.h>
+#include <stdio.h>
 #include <string>
 #include <string.h>
 #include <stdlib.h>
@@ -26,8 +26,6 @@ private:
 	char msg[128];
 
 public:
-
-
 
 	void initSoc() {
 
@@ -62,12 +60,9 @@ public:
 		}
 		else {
 			printf("sendto = %d; msg = %s\n", ret, msg);
-			this_thread::sleep_for(chrono::milliseconds(40));
+			this_thread::sleep_for(chrono::milliseconds(30));
 
 		}
-
-
-
 	}
 
 	int msgRecv() {
@@ -79,12 +74,10 @@ public:
 		}
 
 	}
-
-
 };
 
 
-
+/* //main test client
 int main(void) {
 	CarClientSocket c1;
 	c1.initSoc();
