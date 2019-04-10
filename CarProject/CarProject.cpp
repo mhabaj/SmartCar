@@ -159,28 +159,11 @@ void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 
 
 /*
-int main() {
-	WSADATA wsaData;
-	int iResult;
-
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != 0) {
-		printf("WSAStartup failed: %d\n", iResult);
-		return 1;
-	}
-
-	
+int main()
+{
 
 
-	return 0;
-}
-*/
-//int main()
-//{
 
-
-	/*
 	ObjectScanner obj1;
 	
 	int foundObj = obj1.sceneScan();
@@ -197,10 +180,10 @@ int main() {
 		cout << "FEUX ROUGE" << endl;
 	}
 	
-	*/
+	
 
-//return 0;
-//}
+return 0;
+}*/
 
 
 

@@ -169,7 +169,6 @@ public:
 };
 
 
-
 int main(void)
 {
 	string portRecv = "27015";
@@ -195,3 +194,4 @@ int main(void)
 
 	return 0;
 }
+

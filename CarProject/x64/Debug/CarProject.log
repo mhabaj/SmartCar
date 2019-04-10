@@ -1,4 +1,4 @@
 ﻿  SocketServ.cpp
-d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\socketserv.cpp(160): warning C4838: la conversion de 'int' en 'char' requiert une conversion restrictive
-d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\socketserv.cpp(156): warning C4715: 'CarServerSocket::msgRecu' : les chemins de contrôle ne retournent pas tous une valeur
+d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\socketserv.cpp(149): warning C4838: la conversion de 'int' en 'char' requiert une conversion restrictive
+d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\socketserv.cpp(145): warning C4715: 'CarServerSocket::msgRecu' : les chemins de contrôle ne retournent pas tous une valeur
   CarProject.vcxproj -> D:\MEGA\BACKKKKKKUPPP\backup USB 2Go noir\FAC\2eme année\4eme semestre\C++\Project\code\CarProject\SmartCar\x64\Debug\CarProject.exe
