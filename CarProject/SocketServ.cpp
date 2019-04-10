@@ -1,5 +1,3 @@
-#undef UNICODE
-
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
@@ -41,13 +39,13 @@ public:
 
 	CarServerSocket(string DEFAULT_PORT) {
 		char * cstr = new char[DEFAULT_PORT.length() + 1];
-		strcpy_s(cstr, 6 ,DEFAULT_PORT.c_str());
+		strcpy_s(cstr, 6, DEFAULT_PORT.c_str());
 		this->DEFAULT_PORT = cstr;
 	}
 
 	int  initSoc() {
 
-		
+
 		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (iResult != 0) {
 			printf("Erreur initialisation Socket WSA : %d\n", iResult);
@@ -115,32 +113,32 @@ public:
 	string msgRecu() {
 
 
-			this->iResult = recv(this->ClientSocket, this->recvbuf, this->recvbuflen, 0);
+		this->iResult = recv(this->ClientSocket, this->recvbuf, this->recvbuflen, 0);
 
-			if (this->iResult > 0)
+		if (this->iResult > 0)
+		{
+			string msg;
+
+			for (int i = 0; i < this->iResult; i++)
 			{
-				string msg;
-
-				for (int i = 0; i < this->iResult; i++)
-				{
-					msg += this->recvbuf[i];
-				}
-				
-
-				return msg;
-
-			}
-			else if (iResult == 0)
-				printf("Connection closing...\n");
-
-			else {
-				printf("recv failed with error: %d\n", WSAGetLastError());
-				closesocket(ClientSocket);
-				WSACleanup();
-
+				msg += this->recvbuf[i];
 			}
 
-		
+
+			return msg;
+
+		}
+		else if (iResult == 0)
+			printf("Connection closing...\n");
+
+		else {
+			printf("recv failed with error: %d\n", WSAGetLastError());
+			closesocket(ClientSocket);
+			WSACleanup();
+
+		}
+
+
 
 	}
 
@@ -161,7 +159,7 @@ public:
 	}
 
 	~CarServerSocket() {
-		
+
 		closesocket(ClientSocket);
 		WSACleanup();
 		cout << "SocketDetruit" << endl;
@@ -173,18 +171,18 @@ int main(void)
 {
 	string portRecv = "27015";
 	CarServerSocket SocRecv(portRecv);
-	
+
 	//string portSend = "27016";
 	//CarServerSocket SocSend(portSend);
 
-	while (SocRecv.initSoc() == 0) 
+	while (SocRecv.initSoc() == 0)
 	{
 
 		string s;
-		while (1) 
+		while (1)
 		{
 
-			s= SocRecv.msgRecu();
+			s = SocRecv.msgRecu();
 			cout << "String recu:  " << s << endl;
 		}
 
@@ -194,4 +192,3 @@ int main(void)
 
 	return 0;
 }
-

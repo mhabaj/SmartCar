@@ -15,9 +15,6 @@
 #pragma comment(lib, "WS2_32.lib")
 
 
-
-
-
 using namespace std;
 using namespace cv;
 
@@ -157,37 +154,6 @@ void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 		
 }
 
-
-/*
-int main()
-{
-
-
-
-	ObjectScanner obj1;
-	
-	int foundObj = obj1.sceneScan();
-	if (foundObj ==3) {
-
-		cout << "STOP DETECTEE" << endl;
-	}
-	if (foundObj == 4) {
-
-		cout << "FEUX VERT" << endl;
-	}
-	if (foundObj == 5) {
-
-		cout << "FEUX ROUGE" << endl;
-	}
-	
-	
-
-return 0;
-}*/
-
-
-
-
 class Vehicule {
 
 private:
@@ -265,5 +231,30 @@ CarDecision::CarDecision(Vehicule v1, DetectionParCascade SignalStop, DetectionP
 	this->SignalFeux = SignalFeux;
 }
 */
+/* //main pour tester detection objts.
+int main()
+{
 
+
+
+	ObjectScanner obj1;
+
+	int foundObj = obj1.sceneScan();
+	if (foundObj ==3) {
+
+		cout << "STOP DETECTEE" << endl;
+	}
+	if (foundObj == 4) {
+
+		cout << "FEUX VERT" << endl;
+	}
+	if (foundObj == 5) {
+
+		cout << "FEUX ROUGE" << endl;
+	}
+
+
+
+return 0;
+}*/
 
