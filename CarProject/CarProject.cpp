@@ -191,19 +191,18 @@ private:
 
 public:
 	void resetDetection();
-
-
+	VideoCapture lancerCam();
 	ObjectScanner();
 	int sceneScan();  // 3 si Stop, 4 si Vert, 5 si Rouge
 	void returnFoundObjects(Mat frame, Mat Gray_Transform);
-	bool returnIsStop();
 
 };
 
 ObjectScanner::ObjectScanner()
 {
+	this->VideoSource = lancerCam();
+	
 }
-
 int ObjectScanner::sceneScan()
 {
 
@@ -215,16 +214,7 @@ int ObjectScanner::sceneScan()
 	};
 
 
-	//----Lancer le flux video
-
-	//this->VideoSource.open(this->videoSourceURL); //(pour la video par internet)
-	this->VideoSource.open(0);   //pour webcam locale
-
-	if (!this->VideoSource.isOpened())
-	{
-		cout << "ERREUR CHARGEMENT FLUX VIDEO" << endl;
-		return -1;
-	}
+	
 
 	Mat frame;
 	Mat frame_resized;
@@ -239,7 +229,7 @@ int ObjectScanner::sceneScan()
 		}
 
 		//---- On modifie la taille de l'image (pour les performances) et on applique les Classifiers 
-		resize(frame, frame_resized, Size(500, 350));
+		resize(frame, frame_resized, Size(200, 150));
 
 		cout << this->PanneauStopVec.size() << "," << this->FeuVertVec.size() <<
 			"," << this->FeuRougeVec.size() << endl;
@@ -256,25 +246,24 @@ int ObjectScanner::sceneScan()
 	}
 	if (this->PanneauStopVec.size() > 0)
 	{
-		this->VideoSource.release();
+		resetDetection();
 		return 3;
 	}
 	if (this->FeuVertVec.size() > 0)
 	{
-		this->VideoSource.release();
+		resetDetection();
 
 		return 4;
 	}
 	if (this->FeuRougeVec.size() > 0)
 	{
-		this->VideoSource.release();
+		resetDetection();
 
 		return 5;
 	}
 
 
 }
-
 void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 {
 	//LE SOURCE DE LAG : cvtColor FONCTION POUR TRANSFORMER LIMAGE EN NIVEAUX DE GRIS
@@ -321,9 +310,26 @@ void ObjectScanner::resetDetection() {
 	this->isStop = false;
 	this->isGreen = false;
 	this->isRed = false;
-	Sleep(200);
+	Sleep(100);
 
 }
+VideoCapture ObjectScanner::lancerCam()
+{
+	//----Lancer le flux video
+	
+	  
+	VideoCapture camTemp; //pour webcam locale
+	camTemp.open(0);
+	//camTemp.open(this->videoSourceURL); //(pour la video par internet)
+	if (!camTemp.isOpened())
+	{
+		cout << "ERREUR CHARGEMENT FLUX VIDEO" << endl;
+		exit(0);
+	}
+	return camTemp;
+}
+
+
 
 
 class Vehicule {
@@ -406,7 +412,7 @@ int main()
 			cout << "FEUX ROUGE" << endl;
 		}
 		i++;
-		obj1.resetDetection();
+		//obj1.resetDetection();
 	}
 
 
