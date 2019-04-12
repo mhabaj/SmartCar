@@ -1,3 +1,5 @@
+/*
+
 //gcc main.cpp -o mainude -L/usr/local/lib -lwiringPi -lpthread
 
 #include <wiringPi.h>
@@ -49,8 +51,10 @@ public:
 	}
 
 	double getSonar() {
+		delay(35);
+
 		digitalWrite(this->puceEnvoie, HIGH);
-		delayMicroseconds(1000);
+		delayMicroseconds(35);
 		digitalWrite(this->puceEnvoie, LOW);
 		pingTime = pulseIn(this->puceReception, HIGH, this->timeOut);
 		if (this->pingTime <= 1) {
@@ -81,7 +85,7 @@ public:
 
 
 
-/*
+
 
 int main() {
 
@@ -95,10 +99,8 @@ int main() {
 	while (1) {
 		distance = s1.getSonar();
 		printf("Distance mesuree : %.2f cm\n", distance);
-		delay(10);
 	}
 	return 1;
-}*/
+}
 
-
-
+*/

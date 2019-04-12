@@ -13,22 +13,31 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Fichiers sources\PC">
+      <UniqueIdentifier>{48a34db2-593d-4451-9260-aa9a31711a94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Raspberry">
+      <UniqueIdentifier>{29042076-055a-4ec3-91d8-dc208ec3cbb6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CarProject.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="SocketServ.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="SocketClient.cpp">
-      <Filter>Fichiers sources</Filter>
+    <ClCompile Include="IRDetector.cpp">
+      <Filter>Fichiers sources\Raspberry</Filter>
     </ClCompile>
     <ClCompile Include="MotorAction.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\Raspberry</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketClient.cpp">
+      <Filter>Fichiers sources\Raspberry</Filter>
     </ClCompile>
     <ClCompile Include="UltrasonicRange.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\Raspberry</Filter>
+    </ClCompile>
+    <ClCompile Include="CarProject.cpp">
+      <Filter>Fichiers sources\PC</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketServ.cpp">
+      <Filter>Fichiers sources\PC</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

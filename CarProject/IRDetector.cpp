@@ -1,3 +1,5 @@
+/*
+//gcc main.cpp -o mainude -L/usr/local/lib -lwiringPi -lpthread
 
 #include <wiringPi.h>
 #include <stdio.h>
@@ -23,6 +25,8 @@ public:
 	}
 
 	bool isObstacle() {
+		delay(35);
+
 		if (digitalRead(irReception) == 0) {
 			delay(25);
 			if (digitalRead(irReception) == 0) {

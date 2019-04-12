@@ -112,22 +112,23 @@ public:
 
 	string msgRecu() {
 
-
+		string msg ="";
 		this->iResult = recv(this->ClientSocket, this->recvbuf, this->recvbuflen, 0);
 
 		if (this->iResult > 0)
-		{
-			string msg;
+		{	
+
 
 			for (int i = 0; i < this->iResult; i++)
 			{
 				msg += this->recvbuf[i];
 			}
-
-
 			return msg;
 
-		}
+
+
+		}			
+
 		else if (iResult == 0)
 			printf("Connection closing...\n");
 
@@ -138,14 +139,13 @@ public:
 
 		}
 
-
-
+		exit(1);
 	}
 
-	void msgEnvoi(int msg) {
+	void msgEnvoi(char msg) {
 		//le message sera 1 ou 2 ou 3 donc char[1]
 		char envoiebuff[1] = { msg };
-		// On recoit jusqu'a la fin du msg envoyee par le client
+
 		do
 		{
 			// on Envoie le message
@@ -162,11 +162,11 @@ public:
 
 		closesocket(ClientSocket);
 		WSACleanup();
-		cout << "SocketDetruit" << endl;
+		cout << "\n SocketDetruit \n" << endl;
 	}
 };
 
-
+/*
 int main(void)
 {
 	string portRecv = "27015";
@@ -192,3 +192,4 @@ int main(void)
 
 	return 0;
 }
+*/

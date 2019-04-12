@@ -1,3 +1,4 @@
+/*
 //POUR COMPILER: gcc main.cpp -o mainude -L/usr/local/lib -lwiringPi -lpthread
 
 
