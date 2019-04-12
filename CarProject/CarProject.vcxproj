@@ -158,6 +158,7 @@
     <ClCompile Include="MotorAction.cpp" />
     <ClCompile Include="SocketClient.cpp" />
     <ClCompile Include="SocketServ.cpp" />
+    <ClCompile Include="UltrasonicRange.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
