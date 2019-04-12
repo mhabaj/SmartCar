@@ -13,13 +13,9 @@
 #include <ws2tcpip.h>
 #include <string>
 #include <cstring>
-
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
-
 #define DEFAULT_BUFLEN 255
-
-
 using namespace std;
 using namespace cv;
 
@@ -197,7 +193,6 @@ public:
 	void returnFoundObjects(Mat frame, Mat Gray_Transform);
 
 };
-
 ObjectScanner::ObjectScanner()
 {
 	this->VideoSource = lancerCam();
@@ -330,8 +325,6 @@ VideoCapture ObjectScanner::lancerCam()
 }
 
 
-
-
 class Vehicule {
 
 private:
@@ -352,47 +345,39 @@ public:
 	void getSpeed(float speed);
 
 };
-
 Vehicule::Vehicule()
 {
 }
-
 int  Vehicule::forward()
 {
 	return 10;
 }
-
 int Vehicule::backward()
 {
 	return 11;
 }
-
 int Vehicule::right()
 {
 	return 12;
 }
-
 int Vehicule::left()
 {
 	return 13;
 }
-
 int Vehicule::stop()
 {
 	return 0;
 }
-
 void Vehicule::getSpeed(float speed)
 {
 	this->speed = speed;
 }
 
+
+
  //main pour tester detection objts.
 int main()
 {
-
-
-
 	ObjectScanner obj1;
 	int i = 0;
 	int foundObj;
