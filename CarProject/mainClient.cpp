@@ -6,7 +6,7 @@
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
 
-/*
+
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
 #include <string>
@@ -31,31 +31,6 @@ using namespace std;
 //Server Connection settings:
 const char hostname[] = "192.168.43.244";
 const int portnum = 27016;
-
-
-class Vehicule {
-
-private:
-
-	CarClientSocket* SocketEnvoie;
-	CarClientSocket* SocketReception;
-
-
-public:
-
-	Vehicule() {
-
-
-	}
-
-
-
-
-
-
-
-
-};
 
 
 
@@ -325,6 +300,52 @@ public:
 
 
 
+
+
+
+
+class Vehicule {
+
+private:
+
+	CarClientSocket* SocketEnvoie;
+	CarClientSocket* SocketReception;
+	IRSensor* irSensor;
+	Sonar* sonar;
+
+
+public:
+
+	Vehicule(CarClientSocket& SocketEnvoie, CarClientSocket& SocketReception,
+		IRSensor& irSensor, Sonar& sonar);
+
+	int prepareComponents();
+
+
+
+};
+
+int Vehicule::prepareComponents() {
+
+	Motor::motorInitialisation();
+
+	irSensor->irSetup();
+	sonar->setupSonar();
+	SocketEnvoie->initSoc();
+	SocketReception->initSoc();
+
+}
+Vehicule::Vehicule(CarClientSocket & SocketEnvoie, CarClientSocket & SocketReception, IRSensor & irSensor, Sonar & sonar)
+{
+
+	this->SocketEnvoie = &SocketEnvoie;
+	this->SocketReception = &SocketReception;
+	this->irSensor = &irSensor;
+	this->sonar = &sonar;
+
+}
+
+
 int main(void) {
 
 
@@ -374,7 +395,7 @@ int main(void) {
 
 	return 0;
 }
-
+*/
 //main UltraSonic Sensor:
 /*
 int main() {
@@ -418,7 +439,6 @@ int main(void)
 //main test client
 int main(void) {
 	CarClientSocket c1;
-	//c1.initSoc();
 	int i = 1;
 	c1.initSoc();
 	while (c1.retIsConnected()) {
@@ -431,3 +451,5 @@ int main(void) {
 	return 0;
 }
 */
+
+
