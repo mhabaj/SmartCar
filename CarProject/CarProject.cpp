@@ -1,4 +1,4 @@
-#define WIN32_LEAN_AND_MEAN
+﻿#define WIN32_LEAN_AND_MEAN
 
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
@@ -201,7 +201,7 @@ public:
 ObjectScanner::ObjectScanner()
 {
 	this->VideoSource = lancerCam();
-	
+
 }
 int ObjectScanner::sceneScan()
 {
@@ -259,7 +259,7 @@ int ObjectScanner::sceneScan()
 		return 5;
 	}
 
-	
+
 }
 void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 {
@@ -280,21 +280,15 @@ void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 	// DETECT MULTISCALE POUR LES FEUX VERTS 
 	/*
 	this->CascadePanneauStop.detectMultiScale(Gray_Transformed, this->FeuVertVec);
-
 	for (size_t i = 0; i < this->FeuVertVec.size(); i++)
 	{
 		rectangle(frame, this->FeuVertVec[i], Scalar(0, 100, 0));
-
 	}
-
-
 	// DETECT MULTISCALE POUR LES FEUX ROUGES
 	this->CascadePanneauStop.detectMultiScale(Gray_Transformed, this->FeuRougeVec);
-
 	for (size_t i = 0; i < this->FeuRougeVec.size(); i++)
 	{
 		rectangle(frame, this->FeuRougeVec[i], Scalar(0, 100, 0));
-
 	}
 	*/
 	imshow("", frame);
@@ -313,8 +307,8 @@ void ObjectScanner::resetDetection() {
 VideoCapture ObjectScanner::lancerCam()
 {
 	//----Lancer le flux video
-	
-	  
+
+
 	VideoCapture camTemp; //pour webcam locale
 	camTemp.open(0);
 	//camTemp.open(this->videoSourceURL); //(pour la video par internet)
@@ -332,9 +326,9 @@ class Vehicule {
 private:
 	CarServerSocket* SocSend;
 	ObjectScanner objDetection;
-		
+
 public:
-	//1 forward, 2 backward, 3 right, 4 left, 0 stop
+	//1 forward, 2 backward, 3 right, 4 left, 5 stop
 	Vehicule(CarServerSocket& carSoc);
 	void forward();
 	void backward();
@@ -369,22 +363,22 @@ void Vehicule::stop()
 }
 void Vehicule::goSmart()
 {
-		int i = 0;
-		int foundObj;
-		while (1) {
+	int i = 0;
+	int foundObj;
+	while (1) {
 
-			foundObj = this->objDetection.sceneScan();
+		foundObj = this->objDetection.sceneScan();
 
-			if (foundObj == 3) {
+		if (foundObj == 3) {
 
-				cout << "STOP DETECTEE" << endl;
-				this->stop();
-			}
-			else this->forward();
-
-			
-			i++;
+			cout << "STOP DETECTEE" << endl;
+			this->stop();
 		}
+		else this->forward();
+
+
+		i++;
+	}
 
 
 }
@@ -400,7 +394,7 @@ int main() {
 	//on creer la voiture
 	Vehicule v1(SocSend);
 
-	//on cr�e la detection de mouvement
+	//on crée la detection de mouvement
 	v1.goSmart();
 
 	return 0;
@@ -428,36 +422,26 @@ int main(void)
 		}
 	}
 	SocRecv.~CarServerSocket();
-
-
 /////////////////ENVOIE://///////////////////
 	string portSend = "27016";
 	char mymsg[10] = "blabla";
 	CarServerSocket SocSend(portSend);
 	int i = 0;
 	while (SocSend.initSoc() == 0) {
-
 		while (i < 600) {
 		SocSend.msgEnvoi(mymsg);
 		i++;
 		}
-
-
 	}
-
-
-
-
 	return 0;
 }
-
 */
 
 
 
 
 
- //main pour tester detection objts.
+//main pour tester detection objts.
 /*
 int main()
 {
@@ -465,25 +449,19 @@ int main()
 	int i = 0;
 	int foundObj;
 	while (1) {
-
 		 foundObj = obj1.sceneScan();
 		if (foundObj == 3) {
-
 			cout << "STOP DETECTEE" << endl;
 		}
 		else if (foundObj == 4) {
-
 			cout << "FEUX VERT" << endl;
 		}
 		else if (foundObj == 5) {
-
 			cout << "FEUX ROUGE" << endl;
 		}
 		i++;
 		//obj1.resetDetection();
 	}
-
-
 return 0;
 }
 */
@@ -492,25 +470,18 @@ int main(void)
 {
 	string portRecv = "27015";
 	CarServerSocket SocRecv(portRecv);
-
 	//string portSend = "27016";
 	//CarServerSocket SocSend(portSend);
-
 	while (SocRecv.initSoc() == 0)
 	{
-
 		string s;
 		while (1)
 		{
-
 			s = SocRecv.msgRecu();
 			cout << "String recu:  " << s << endl;
 		}
-
 	}
-
 	SocRecv.~CarServerSocket();
-
 	return 0;
 }
 */
