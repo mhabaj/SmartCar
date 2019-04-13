@@ -6,7 +6,7 @@
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
 
-
+/*
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
 #include <string>
@@ -34,7 +34,7 @@ const int portnum = 27016;
 
 
 
-class CarClientSocket : public Vehicule {
+class CarClientSocket  {
 private:
 
 	int sd;  // n° fd de la socket
@@ -45,7 +45,9 @@ private:
 	bool isConnected;
 
 public:
+	CarClientSocket() {
 
+	}
 	void initSoc() {
 
 
@@ -360,14 +362,9 @@ void Vehicule::doMovements() {
 
 	while (SocketReception->retIsConnected() && this->status) {
 
-		
 			action=SocketReception->msgRecv();
 			
 			Motor::TakeAction(action);
-
-
-
-
 	}
 }
 
@@ -402,14 +399,16 @@ Vehicule::Vehicule(CarClientSocket & SocketEnvoie, CarClientSocket & SocketRecep
 int main(void) {
 
 
+	Sonar sonar;
+	IRSensor ir1;
 
+	CarClientSocket socketSend;
+	CarClientSocket socketRecv;
 
-
-
-
-
-
-
+	Vehicule v1(socketSend, socketRecv, ir1, sonar);
+	v1.prepareComponents();
+	v1.startup();
+	v1.doMovements();
 
 	return 0;
 }
