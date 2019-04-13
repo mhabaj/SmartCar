@@ -8,11 +8,13 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <chrono>
+#include <thread>
 
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
 
-#define DEFAULT_BUFLEN 255
+#define DEFAULT_BUFLEN 8
 
 using namespace std;
 
@@ -33,6 +35,7 @@ private:
 	int iSendResult;
 	char recvbuf[DEFAULT_BUFLEN];
 	int recvbuflen = DEFAULT_BUFLEN;
+	char sendBuffer[DEFAULT_BUFLEN];
 
 
 public:
@@ -77,7 +80,7 @@ public:
 		}
 
 		// Initialisation du protocole TCP du Socket:
-		iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+		iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
 		if (iResult == SOCKET_ERROR) {
 			printf("erreur bind(): %d\n", WSAGetLastError());
 			freeaddrinfo(result);
@@ -112,11 +115,11 @@ public:
 
 	string msgRecu() {
 
-		string msg ="";
+		string msg = "";
 		this->iResult = recv(this->ClientSocket, this->recvbuf, this->recvbuflen, 0);
 
 		if (this->iResult > 0)
-		{	
+		{
 
 
 			for (int i = 0; i < this->iResult; i++)
@@ -127,10 +130,10 @@ public:
 
 
 
-		}			
+		}
 
 		else if (iResult == 0)
-			printf("Connection closing...\n");
+			printf("femerutre de la connexion.....\n");
 
 		else {
 			printf("recv failed with error: %d\n", WSAGetLastError());
@@ -142,16 +145,17 @@ public:
 		exit(1);
 	}
 
-	void msgEnvoi(char msg) {
+	void msgEnvoi(string msgEnvoie) {
 		//le message sera 1 ou 2 ou 3 donc char[1]
-		char envoiebuff[1] = { msg };
+		//char envoiebuff[1] = { msg };
 
-		do
-		{
+		int n = msgEnvoie.length();
+		strcpy_s(this->sendBuffer, msgEnvoie.c_str());
 			// on Envoie le message
-			iSendResult = send(ClientSocket, envoiebuff, iResult, 0);
+			iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
+			this_thread::sleep_for(chrono::milliseconds(20));
 			//closesocket(ClientSocket);
-		} while (this->iResult > 0);
+		
 	}
 
 	int returniResult() {
@@ -169,27 +173,42 @@ public:
 /*
 int main(void)
 {
+	///////////:RECEPTION
 	string portRecv = "27015";
 	CarServerSocket SocRecv(portRecv);
-
 	//string portSend = "27016";
 	//CarServerSocket SocSend(portSend);
-
 	while (SocRecv.initSoc() == 0)
 	{
-
 		string s;
 		while (1)
 		{
-
 			s = SocRecv.msgRecu();
 			cout << "String recu:  " << s << endl;
 		}
+	}
+	SocRecv.~CarServerSocket();
+	
 
+/////////////////ENVOIE://///////////////////
+	string portSend = "27016";
+	char mymsg[10] = "blabla";
+	CarServerSocket SocSend(portSend);
+	int i = 0;
+	while (SocSend.initSoc() == 0) {
+
+		while (i < 600) {
+		SocSend.msgEnvoi(mymsg);
+		i++;
+		}
+
+		
 	}
 
-	SocRecv.~CarServerSocket();
+
+
 
 	return 0;
 }
+
 */

@@ -13,11 +13,14 @@
 #include <ws2tcpip.h>
 #include <string>
 #include <cstring>
+#include <chrono>
+#include <thread>
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
-#define DEFAULT_BUFLEN 255
+#define DEFAULT_BUFLEN 8
 using namespace std;
 using namespace cv;
+
 
 
 class CarServerSocket {
@@ -35,6 +38,7 @@ private:
 	int iSendResult;
 	char recvbuf[DEFAULT_BUFLEN];
 	int recvbuflen = DEFAULT_BUFLEN;
+	char sendBuffer[DEFAULT_BUFLEN];
 
 
 public:
@@ -132,7 +136,7 @@ public:
 		}
 
 		else if (iResult == 0)
-			printf("Connection closing...\n");
+			printf("femerutre de la connexion.....\n");
 
 		else {
 			printf("recv failed with error: %d\n", WSAGetLastError());
@@ -144,16 +148,17 @@ public:
 		exit(1);
 	}
 
-	void msgEnvoi(char msg) {
+	void msgEnvoi(string msgEnvoie) {
 		//le message sera 1 ou 2 ou 3 donc char[1]
-		char envoiebuff[1] = { msg };
+		//char envoiebuff[1] = { msg };
 
-		do
-		{
-			// on Envoie le message
-			iSendResult = send(ClientSocket, envoiebuff, iResult, 0);
-			//closesocket(ClientSocket);
-		} while (this->iResult > 0);
+		int n = msgEnvoie.length();
+		strcpy_s(this->sendBuffer, msgEnvoie.c_str());
+		// on Envoie le message
+		iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
+		this_thread::sleep_for(chrono::milliseconds(20));
+		//closesocket(ClientSocket);
+
 	}
 
 	int returniResult() {
@@ -208,9 +213,6 @@ int ObjectScanner::sceneScan()
 		return -1;
 	};
 
-
-	
-
 	Mat frame;
 	Mat frame_resized;
 	Mat Gray_Transform;
@@ -257,7 +259,7 @@ int ObjectScanner::sceneScan()
 		return 5;
 	}
 
-
+	
 }
 void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
 {
@@ -328,54 +330,135 @@ VideoCapture ObjectScanner::lancerCam()
 class Vehicule {
 
 private:
-
-	float speed;
-	int Motor_1, Motor_2;
-	int servo;
-
-
+	CarServerSocket* SocSend;
+	ObjectScanner objDetection;
+		
 public:
-	//10 forward, 11 backward, 12 right, 13 left, 0 stop
-	Vehicule();
-	int forward();
-	int backward();
-	int right();
-	int left();
-	int stop();
-	void getSpeed(float speed);
-
+	//1 forward, 2 backward, 3 right, 4 left, 0 stop
+	Vehicule(CarServerSocket& carSoc);
+	void forward();
+	void backward();
+	void right();
+	void left();
+	void stop();
+	void goSmart();
 };
-Vehicule::Vehicule()
+Vehicule::Vehicule(CarServerSocket& carSoc)
 {
+	this->SocSend = &carSoc;
 }
-int  Vehicule::forward()
+void  Vehicule::forward()
 {
-	return 10;
+	this->SocSend->msgEnvoi("1");
 }
-int Vehicule::backward()
+void Vehicule::backward()
 {
-	return 11;
+	this->SocSend->msgEnvoi("2");
 }
-int Vehicule::right()
+void Vehicule::right()
 {
-	return 12;
+	this->SocSend->msgEnvoi("3");
 }
-int Vehicule::left()
+void Vehicule::left()
 {
-	return 13;
+	this->SocSend->msgEnvoi("4");
 }
-int Vehicule::stop()
+void Vehicule::stop()
 {
+	this->SocSend->msgEnvoi("5");
+}
+void Vehicule::goSmart()
+{
+		int i = 0;
+		int foundObj;
+		while (1) {
+
+			foundObj = this->objDetection.sceneScan();
+
+			if (foundObj == 3) {
+
+				cout << "STOP DETECTEE" << endl;
+				this->stop();
+			}
+			else this->forward();
+
+			
+			i++;
+		}
+
+
+}
+
+
+int main() {
+
+
+	//on creer le socket d'envoie
+	string portSend = "27016";
+	CarServerSocket SocSend(portSend);
+	SocSend.initSoc();
+	//on creer la voiture
+	Vehicule v1(SocSend);
+
+	//on crée la detection de mouvement
+	v1.goSmart();
+
 	return 0;
 }
-void Vehicule::getSpeed(float speed)
+
+
+
+
+//main pour tester sockets
+/*  TEST SERVEUR:
+int main(void)
 {
-	this->speed = speed;
+	///////////:RECEPTION
+	string portRecv = "27015";
+	CarServerSocket SocRecv(portRecv);
+	//string portSend = "27016";
+	//CarServerSocket SocSend(portSend);
+	while (SocRecv.initSoc() == 0)
+	{
+		string s;
+		while (1)
+		{
+			s = SocRecv.msgRecu();
+			cout << "String recu:  " << s << endl;
+		}
+	}
+	SocRecv.~CarServerSocket();
+
+
+/////////////////ENVOIE://///////////////////
+	string portSend = "27016";
+	char mymsg[10] = "blabla";
+	CarServerSocket SocSend(portSend);
+	int i = 0;
+	while (SocSend.initSoc() == 0) {
+
+		while (i < 600) {
+		SocSend.msgEnvoi(mymsg);
+		i++;
+		}
+
+
+	}
+
+
+
+
+	return 0;
 }
+
+*/
+
+
 
 
 
  //main pour tester detection objts.
+/*
 int main()
 {
 	ObjectScanner obj1;
@@ -403,7 +486,7 @@ int main()
 
 return 0;
 }
-
+*/
 /* //pour testet Sockets
 int main(void)
 {

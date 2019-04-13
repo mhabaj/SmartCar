@@ -39,5 +39,8 @@
     <ClCompile Include="SocketServ.cpp">
       <Filter>Fichiers sources\PC</Filter>
     </ClCompile>
+    <ClCompile Include="mainClient.cpp">
+      <Filter>Fichiers sources\Raspberry</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="CarProject.cpp" />
     <ClCompile Include="IRDetector.cpp" />
+    <ClCompile Include="mainClient.cpp" />
     <ClCompile Include="MotorAction.cpp" />
     <ClCompile Include="SocketClient.cpp" />
     <ClCompile Include="SocketServ.cpp" />
