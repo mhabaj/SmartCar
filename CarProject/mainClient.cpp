@@ -1,12 +1,12 @@
 
-
+/*
 // Commandes compilation:
 //gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread    ---> IR Sensor
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
 
-/*
+
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
 #include <string>
@@ -30,11 +30,10 @@ using namespace std;
 
 //Server Connection settings:
 const char hostname[] = "192.168.43.244";
-const int portnum = 27016;
 
 
 
-class CarClientSocket  {
+class CarClientSocket {
 private:
 
 	int sd;  // n° fd de la socket
@@ -43,9 +42,11 @@ private:
 	struct sockaddr_in addrsrv;
 	char msg[128];
 	bool isConnected;
+	int portnum;
 
 public:
-	CarClientSocket() {
+	CarClientSocket(int portnum) {
+		this->portnum = portnum;
 
 	}
 	void initSoc() {
@@ -115,7 +116,7 @@ public:
 	}
 };
 
-class IRSensor : public Vehicule {
+class IRSensor {
 private:
 
 	int irReception = 18;  //12 cm
@@ -147,7 +148,7 @@ public:
 	}
 };
 
-class Sonar : public Vehicule {
+class Sonar {
 
 private:
 	const int puceEnvoie = 23;
@@ -222,7 +223,7 @@ public:
 
 };
 
-class Motor : public Vehicule {
+class Motor {
 
 	//Parametres Wiring Pi moteurs:
 #define motorPin1	5	//forward
@@ -300,7 +301,7 @@ public:
 	}
 
 	static void TakeAction(string action) {
-		
+
 		if (action.find("1") != string::npos) {
 			Motor::motorForward();
 
@@ -360,17 +361,17 @@ public:
 void Vehicule::doMovements() {
 	string action;
 
-	while (SocketReception->retIsConnected() && this->status) {
+	while (1) {
 
-			action=SocketReception->msgRecv();
-			
-			Motor::TakeAction(action);
+		action = SocketReception->msgRecv();
+		cout << action << endl;
+		Motor::TakeAction(action);
 	}
 }
 
 void Vehicule::startup() {
 
-	
+
 
 }
 
@@ -380,9 +381,10 @@ void Vehicule::prepareComponents() {
 
 	irSensor->irSetup();
 	sonar->setupSonar();
-	SocketEnvoie->initSoc();
+	//SocketEnvoie->initSoc();
 	SocketReception->initSoc();
 	this->status = true;
+	cout << "prepared components" << endl;
 
 }
 Vehicule::Vehicule(CarClientSocket & SocketEnvoie, CarClientSocket & SocketReception, IRSensor & irSensor, Sonar & sonar)
@@ -402,17 +404,16 @@ int main(void) {
 	Sonar sonar;
 	IRSensor ir1;
 
-	CarClientSocket socketSend;
-	CarClientSocket socketRecv;
+	CarClientSocket socketSend(27017);
+	CarClientSocket socketRecv(27016);
 
 	Vehicule v1(socketSend, socketRecv, ir1, sonar);
 	v1.prepareComponents();
-	v1.startup();
+	//v1.startup();
 	v1.doMovements();
 
 	return 0;
 }
-
 
 
 //main pour tester motor.

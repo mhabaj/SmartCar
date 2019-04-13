@@ -156,7 +156,7 @@ public:
 		strcpy_s(this->sendBuffer, msgEnvoie.c_str());
 		// on Envoie le message
 		iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
-		this_thread::sleep_for(chrono::milliseconds(20));
+		this_thread::sleep_for(chrono::milliseconds(50));
 		//closesocket(ClientSocket);
 
 	}
@@ -246,18 +246,20 @@ int ObjectScanner::sceneScan()
 		resetDetection();
 		return 3;
 	}
-	if (this->FeuVertVec.size() > 0)
-	{
-		resetDetection();
+	//if (this->FeuVertVec.size() > 0)
+	//{
+	//	resetDetection();
 
-		return 4;
-	}
-	if (this->FeuRougeVec.size() > 0)
-	{
-		resetDetection();
+	//	return 4;
+	//}
+	//if (this->FeuRougeVec.size() > 0)
+	//{
+	//	resetDetection();
 
-		return 5;
-	}
+	//	return 5;
+	//}
+	
+	return 1;
 
 
 }
@@ -301,7 +303,7 @@ void ObjectScanner::resetDetection() {
 	this->isStop = false;
 	this->isGreen = false;
 	this->isRed = false;
-	Sleep(100);
+	Sleep(80);
 
 }
 VideoCapture ObjectScanner::lancerCam()
@@ -343,7 +345,7 @@ Vehicule::Vehicule(CarServerSocket& carSoc)
 }
 void  Vehicule::forward()
 {
-	this->SocSend->msgEnvoi("1");
+	this->SocSend->msgEnvoi("10");
 }
 void Vehicule::backward()
 {
@@ -363,21 +365,25 @@ void Vehicule::stop()
 }
 void Vehicule::goSmart()
 {
-	int i = 0;
-	int foundObj;
 	while (1) {
+		int foundObj = this->objDetection.sceneScan();
+		cout << "foundObj data : " << foundObj << endl;
+				switch (foundObj) {
+					case 1 : this->forward(); cout << "RAS" << endl; break;
 
-		foundObj = this->objDetection.sceneScan();
-
-		if (foundObj == 3) {
-
-			cout << "STOP DETECTEE" << endl;
-			this->stop();
-		}
-		else this->forward();
+					case 3 : this->stop(); cout << "STOP DETECTEE" << endl; break;
+					case 4 : this->right(); cout << "TOURNER A DROITE" << endl; break;
+					case 5 : this->left(); cout << "TOURNER A GAUCHE" << endl; break;
 
 
-		i++;
+					default: this->stop(); break;
+				}
+		
+		
+			//	this->forward();
+
+			
+
 	}
 
 
@@ -389,10 +395,10 @@ int main() {
 
 	//on creer le socket d'envoie
 	string portSend = "27016";
-	CarServerSocket SocSend(portSend);
-	SocSend.initSoc();
+	CarServerSocket SocVoiture(portSend);
+	SocVoiture.initSoc();
 	//on creer la voiture
-	Vehicule v1(SocSend);
+	Vehicule v1(SocVoiture);
 
 	//on crée la detection de mouvement
 	v1.goSmart();
