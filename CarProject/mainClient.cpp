@@ -296,6 +296,33 @@ public:
 		pinMode(rightPin, OUTPUT);
 		return 1;
 	}
+
+	static void TakeAction(string action) {
+		
+		if (action.find("1") != string::npos) {
+			Motor::motorForward();
+
+		}
+		else if (action.find("2") != string::npos) {
+			Motor::motorBackward();
+
+		}
+		else if (action.find("3") != string::npos) {
+			Motor::motorRightForward();
+
+		}
+		else if (action.find("4") != string::npos) {
+			Motor::motorLeftForward();
+
+		}
+		else if (action.find("5") != string::npos) {
+			Motor::motorStop();
+
+		}
+		else {
+			Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
+		}
+	}
 };
 
 
@@ -312,6 +339,7 @@ private:
 	CarClientSocket* SocketReception;
 	IRSensor* irSensor;
 	Sonar* sonar;
+	bool status;
 
 
 public:
@@ -319,13 +347,37 @@ public:
 	Vehicule(CarClientSocket& SocketEnvoie, CarClientSocket& SocketReception,
 		IRSensor& irSensor, Sonar& sonar);
 
-	int prepareComponents();
+	void prepareComponents();
+	void startup();
 
+	void doMovements();
 
 
 };
 
-int Vehicule::prepareComponents() {
+void Vehicule::doMovements() {
+	string action;
+
+	while (SocketReception->retIsConnected() && this->status) {
+
+		
+			action=SocketReception->msgRecv();
+			
+			Motor::TakeAction(action);
+
+
+
+
+	}
+}
+
+void Vehicule::startup() {
+
+	
+
+}
+
+void Vehicule::prepareComponents() {
 
 	Motor::motorInitialisation();
 
@@ -333,6 +385,7 @@ int Vehicule::prepareComponents() {
 	sonar->setupSonar();
 	SocketEnvoie->initSoc();
 	SocketReception->initSoc();
+	this->status = true;
 
 }
 Vehicule::Vehicule(CarClientSocket & SocketEnvoie, CarClientSocket & SocketReception, IRSensor & irSensor, Sonar & sonar)
