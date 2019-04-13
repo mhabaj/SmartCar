@@ -240,7 +240,7 @@ int ObjectScanner::sceneScan()
 		{
 			break;
 		}
-	}
+	
 	if (this->PanneauStopVec.size() > 0)
 	{
 		resetDetection();
@@ -260,7 +260,7 @@ int ObjectScanner::sceneScan()
 	//}
 	
 	return 1;
-
+}
 
 }
 void ObjectScanner::returnFoundObjects(Mat frame, Mat Gray_Transformed)
@@ -303,7 +303,7 @@ void ObjectScanner::resetDetection() {
 	this->isStop = false;
 	this->isGreen = false;
 	this->isRed = false;
-	Sleep(80);
+	//Sleep(35);
 
 }
 VideoCapture ObjectScanner::lancerCam()
@@ -364,7 +364,9 @@ void Vehicule::stop()
 	this->SocSend->msgEnvoi("5");
 }
 void Vehicule::goSmart()
-{
+{		
+	
+
 	while (1) {
 		int foundObj = this->objDetection.sceneScan();
 		cout << "foundObj data : " << foundObj << endl;
