@@ -303,7 +303,7 @@ void ObjectScanner::resetDetection() {
 	this->isStop = false;
 	this->isGreen = false;
 	this->isRed = false;
-	//Sleep(35);
+	//Sleep(80);
 
 }
 VideoCapture ObjectScanner::lancerCam()
@@ -345,7 +345,7 @@ Vehicule::Vehicule(CarServerSocket& carSoc)
 }
 void  Vehicule::forward()
 {
-	this->SocSend->msgEnvoi("10");
+	this->SocSend->msgEnvoi("1");
 }
 void Vehicule::backward()
 {
@@ -365,29 +365,19 @@ void Vehicule::stop()
 }
 void Vehicule::goSmart()
 {		
-	
-
 	while (1) {
 		int foundObj = this->objDetection.sceneScan();
 		cout << "foundObj data : " << foundObj << endl;
 				switch (foundObj) {
 					case 1 : this->forward(); cout << "RAS" << endl; break;
-
 					case 3 : this->stop(); cout << "STOP DETECTEE" << endl; break;
 					case 4 : this->right(); cout << "TOURNER A DROITE" << endl; break;
 					case 5 : this->left(); cout << "TOURNER A GAUCHE" << endl; break;
 
-
 					default: this->stop(); break;
 				}
 		
-		
-			//	this->forward();
-
-			
-
 	}
-
 
 }
 

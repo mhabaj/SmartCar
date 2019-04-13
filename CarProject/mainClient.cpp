@@ -1,12 +1,12 @@
 
-/*
+
 // Commandes compilation:
 //gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread    ---> IR Sensor
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
 
-
+/*
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
 #include <string>
@@ -301,30 +301,43 @@ public:
 	}
 
 	static void TakeAction(string action) {
+		int n = std::stoi(action);
 
-		if (action.find("1") != string::npos) {
-			Motor::motorForward();
+		switch (n) {
+		case 1: Motor::motorForward();  break;
+		case 2: Motor::motorBackward(); break;
+		case 4: Motor::motorLeftForward(); break;
+		case 3: Motor::motorRightForward(); break;
+		case 5: Motor::motorStop(); break;
+		default: Motor::motorStop(); cout << "Commande deplacement invalide" << endl; break;
 
-		}
-		else if (action.find("2") != string::npos) {
-			Motor::motorBackward();
-
-		}
-		else if (action.find("3") != string::npos) {
-			Motor::motorRightForward();
-
-		}
-		else if (action.find("4") != string::npos) {
-			Motor::motorLeftForward();
 
 		}
-		else if (action.find("5") != string::npos) {
-			Motor::motorStop();
+		///////OU BIEN///////
+				if (n==1) {
+					Motor::motorForward();
 
-		}
-		else {
-			Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
-		}
+				}
+				else if (n==2) {
+					Motor::motorBackward();
+
+				}
+				 else if (n==3) {
+					Motor::motorRightForward();
+
+				}
+				 else if (n==4) {
+					Motor::motorLeftForward();
+
+				}
+				 else if (n==5) {
+					Motor::motorStop();
+
+				}
+				else {
+					Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
+				}
+		
 	}
 };
 
@@ -338,8 +351,7 @@ class Vehicule {
 
 private:
 
-	CarClientSocket* SocketEnvoie;
-	CarClientSocket* SocketReception;
+	CarClientSocket* socketIO;
 	IRSensor* irSensor;
 	Sonar* sonar;
 	bool status;
@@ -347,7 +359,7 @@ private:
 
 public:
 
-	Vehicule(CarClientSocket& SocketEnvoie, CarClientSocket& SocketReception,
+	Vehicule(CarClientSocket& socketIO,
 		IRSensor& irSensor, Sonar& sonar);
 
 	void prepareComponents();
@@ -363,7 +375,7 @@ void Vehicule::doMovements() {
 
 	while (1) {
 
-		action = SocketReception->msgRecv();
+		action = socketIO->msgRecv();
 		cout << action << endl;
 		Motor::TakeAction(action);
 	}
@@ -381,17 +393,15 @@ void Vehicule::prepareComponents() {
 
 	irSensor->irSetup();
 	sonar->setupSonar();
-	//SocketEnvoie->initSoc();
-	SocketReception->initSoc();
+	socketIO->initSoc();
 	this->status = true;
 	cout << "prepared components" << endl;
 
 }
-Vehicule::Vehicule(CarClientSocket & SocketEnvoie, CarClientSocket & SocketReception, IRSensor & irSensor, Sonar & sonar)
+Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sonar)
 {
 
-	this->SocketEnvoie = &SocketEnvoie;
-	this->SocketReception = &SocketReception;
+	this->socketIO = &socketIO;
 	this->irSensor = &irSensor;
 	this->sonar = &sonar;
 
@@ -404,10 +414,11 @@ int main(void) {
 	Sonar sonar;
 	IRSensor ir1;
 
-	CarClientSocket socketSend(27017);
-	CarClientSocket socketRecv(27016);
-
-	Vehicule v1(socketSend, socketRecv, ir1, sonar);
+	//CarClientSocket socketSend(27017);
+	//socketSend.initSoc();
+	CarClientSocket socketIO(27016);
+	//socketRecv.initSoc();
+	Vehicule v1(socketIO, ir1, sonar);
 	v1.prepareComponents();
 	//v1.startup();
 	v1.doMovements();
