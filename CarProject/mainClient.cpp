@@ -5,7 +5,7 @@
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
-
+/*
 
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
@@ -119,7 +119,7 @@ public:
 class IRSensor {
 private:
 
-	int irReception = 18;  //12 cm
+	int irReception = 4;  //12 cm
 	CarClientSocket* SocketIR;
 
 
@@ -138,22 +138,27 @@ public:
 		pinMode(irReception, INPUT);
 	}
 
-	string isObstacle() {
+	int isObstacle() {
 		delay(35);
 
 		if (digitalRead(irReception) == 0) {
 			delay(25);
 			if (digitalRead(irReception) == 0) {
 				printf("Detected Barrier !\n");
-				return "obstacle";
+				return 1;
 			}
-			else return "ras";
+			else {
+				return 0;
+			}
 		}
 	}
 
 	void sendIRSensorData() {
-
-		SocketIR->msgEnvoie((isObstacle()));
+		int obstacle = isObstacle();
+		string statusIR;
+		if (obstacle == 1) statusIR = "obstacle";
+		if (obstacle == 0) statusIR = "ras";
+		SocketIR->msgEnvoie(statusIR);
 
 	}
 };
@@ -224,7 +229,8 @@ public:
 	int setupSonar() {
 
 		if (wiringPiSetupGpio() == -1) {
-			printf("Erreur wiringPi Setup !");
+
+			("Erreur wiringPi Setup !");
 			return 1;
 		}
 		pinMode(puceEnvoie, OUTPUT);
@@ -412,8 +418,8 @@ void Vehicule::startup() {
 
 	this->prepareComponents();
 	while (1) {
-		this->sonar->sendSonarData();
-		//this->irSensor->sendIRSensorData();
+		//this->sonar->sendSonarData();
+		this->irSensor->sendIRSensorData();
 		this->doMovements();
 	}
 }
@@ -511,24 +517,28 @@ int main() {
 
 
 //main pour tester IR sensor
-/*
+
 int main(void)
 {
 
-	IRSensor s1;
-	s1.irSetup();
+	CarClientSocket socketIO(27016);
+	//Sonar sonar(socketIO);
+		socketIO.initSoc();
 
-	while (1) {
+	IRSensor ir1(socketIO);
+	ir1.irSetup();
 
-		s1.isObstacle();
+	//while (1) {
 
-	}
+		ir1.isObstacle();
+
+	//}
 
 
 
 	return 0;
 }
-*/
+
 //Main pour tester sockets.
 /*
 //main test client

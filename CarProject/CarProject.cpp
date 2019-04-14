@@ -374,11 +374,11 @@ int Vehicule::returnIfObstacle() {
 	strcpy_s(s_array, s.c_str());	
 
 	if (strstr(s_array, ss_array) != NULL) {
-		printf("Obstacle Detectee (IR)");
+		printf("Obstacle Detectee (IR) \n");
 		return 1;
 	}
 	else if (strstr(s_array, "1") != NULL) {
-		printf("Obstacle Detectee (Sonar)");
+		printf("Obstacle Detectee (Sonar) \n");
 		return 2;
 	}
 	else return 0;

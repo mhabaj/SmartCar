@@ -1,4 +1,2 @@
-﻿  CarProject.cpp
-d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(156): warning C4267: 'initialisation' : conversion de 'size_t' en 'int', perte possible de données
-d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(267): warning C4715: 'ObjectScanner::sceneScan' : les chemins de contrôle ne retournent pas tous une valeur
+﻿  mainClient.cpp
   CarProject.vcxproj -> D:\MEGA\BACKKKKKKUPPP\backup USB 2Go noir\FAC\2eme année\4eme semestre\C++\Project\code\CarProject\SmartCar\x64\Debug\CarProject.exe
