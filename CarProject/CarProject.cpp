@@ -15,9 +15,10 @@
 #include <cstring>
 #include <chrono>
 #include <thread>
+
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
-#define DEFAULT_BUFLEN 8
+#define DEFAULT_BUFLEN 16
 using namespace std;
 using namespace cv;
 
@@ -222,6 +223,7 @@ int ObjectScanner::sceneScan()
 		if (frame.empty())
 		{
 			cout << "ERREUR TRAME VIDE" << endl;
+			return -1;
 			break;
 		}
 
@@ -326,7 +328,7 @@ VideoCapture ObjectScanner::lancerCam()
 class Vehicule {
 
 private:
-	CarServerSocket* SocSend;
+	CarServerSocket* carSoc;
 	ObjectScanner objDetection;
 
 public:
@@ -337,49 +339,83 @@ public:
 	void right();
 	void left();
 	void stop();
+	int returnIfObstacle();
 	void goSmart();
 };
 Vehicule::Vehicule(CarServerSocket& carSoc)
 {
-	this->SocSend = &carSoc;
+	this->carSoc = &carSoc;
 }
 void  Vehicule::forward()
 {
-	this->SocSend->msgEnvoi("1");
+	this->carSoc->msgEnvoi("1");
 }
 void Vehicule::backward()
 {
-	this->SocSend->msgEnvoi("2");
+	this->carSoc->msgEnvoi("2");
 }
 void Vehicule::right()
 {
-	this->SocSend->msgEnvoi("3");
+	this->carSoc->msgEnvoi("3");
 }
 void Vehicule::left()
 {
-	this->SocSend->msgEnvoi("4");
+	this->carSoc->msgEnvoi("4");
 }
 void Vehicule::stop()
 {
-	this->SocSend->msgEnvoi("5");
+	this->carSoc->msgEnvoi("5");
+}
+int Vehicule::returnIfObstacle() {
+	//return 1 si obstacle IR, 2 si Sonar, 0 sinon 
+	string s = this->carSoc->msgRecu();
+	char s_array[DEFAULT_BUFLEN];
+	char ss_array[9] = "obstacle";
+	strcpy_s(s_array, s.c_str());	
+
+	if (strstr(s_array, ss_array) != NULL) {
+		printf("Obstacle Detectee (IR)");
+		return 1;
+	}
+	else if (strstr(s_array, "1") != NULL) {
+		printf("Obstacle Detectee (Sonar)");
+		return 2;
+	}
+	else return 0;
 }
 void Vehicule::goSmart()
 {		
-	while (1) {
-		int foundObj = this->objDetection.sceneScan();
-		cout << "foundObj data : " << foundObj << endl;
-				switch (foundObj) {
-					case 1 : this->forward(); cout << "RAS" << endl; break;
-					case 3 : this->stop(); cout << "STOP DETECTEE" << endl; break;
-					case 4 : this->right(); cout << "TOURNER A DROITE" << endl; break;
-					case 5 : this->left(); cout << "TOURNER A GAUCHE" << endl; break;
-
+	while (1) 
+	{
+		int isObstacle = returnIfObstacle();
+		if (isObstacle == 0)
+		{
+			
+				int foundObj = this->objDetection.sceneScan();
+				cout << "foundObj data : " << foundObj << endl;
+				switch (foundObj) 
+				{
+					case 1: this->forward(); cout << "RAS" << endl; break;
+					case 3: this->stop(); cout << "STOP DETECTEE" << endl; break;
+					case 4: this->right(); cout << "TOURNER A DROITE" << endl; break;
+					case 5: this->left(); cout << "TOURNER A GAUCHE" << endl; break;
 					default: this->stop(); break;
 				}
-		
+		}
+		else if (isObstacle==1) 
+		{ 
+			//rajouter un comportement si on rencontre un obstacle via sonar plutot que IR
+			this->stop(); 
+		}
+		else if (isObstacle == 2) {
+			//rajouter un comportement si on rencontre un obstacle via sonar plutot que IR
+			this->stop();
+		}
 	}
-
 }
+
+
+
 
 
 int main() {

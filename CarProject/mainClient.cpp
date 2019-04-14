@@ -1,3 +1,4 @@
+/*
 
 
 // Commandes compilation:
@@ -6,7 +7,7 @@
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
 
-/*
+
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
 #include <string>
@@ -83,7 +84,7 @@ public:
 		}
 		else {
 			printf("sendto = %d; msg = %s\n", ret, msg);
-			this_thread::sleep_for(chrono::milliseconds(30));
+			this_thread::sleep_for(chrono::milliseconds(40));
 
 		}
 	}
@@ -120,9 +121,14 @@ class IRSensor {
 private:
 
 	int irReception = 18;  //12 cm
+	CarClientSocket* SocketIR;
+
 
 public:
-	IRSensor() {
+	IRSensor(CarClientSocket& SocketIR) {
+	
+		this->SocketIR = &SocketIR;
+	
 	}
 	int irSetup() {
 		if (wiringPiSetupGpio() == -1) {
@@ -133,18 +139,24 @@ public:
 		pinMode(irReception, INPUT);
 	}
 
-	bool isObstacle() {
+	string isObstacle() {
 		delay(35);
 
 		if (digitalRead(irReception) == 0) {
 			delay(25);
 			if (digitalRead(irReception) == 0) {
 				printf("Detected Barrier !\n");
-				return true;
+				return "obstacle";
 			}
-			else return false;
+			else return "ras";
 		}
-		else return false;
+		else return "ras";
+	}
+
+	void sendIRSensorData() {
+
+		SocketIR->msgEnvoie((isObstacle()));
+
 	}
 };
 
@@ -157,12 +169,16 @@ private:
 	const int timeOut = MAX_DISTANCE * 60;// calculate timeout according to the maximum measured distanc
 	long pingTime;
 	float distance;
+	CarClientSocket* SocketSonar;
 
 
 
 public:
-	Sonar() {
+	Sonar(CarClientSocket& SocketSonar) {
+		this->SocketSonar = &SocketSonar;
 	}
+
+
 
 	int pulseIn(int pin, int level, int timeout)
 	{
@@ -219,9 +235,21 @@ public:
 
 	}
 
+	void sendSonarData() {
 
+		double distanceToSend = getSonar();
+		
+		SocketSonar->msgEnvoie(to_string(distanceToSend));
+			
+		
+		
+
+
+	}
 
 };
+
+
 
 class Motor {
 
@@ -362,7 +390,7 @@ public:
 	Vehicule(CarClientSocket& socketIO,
 		IRSensor& irSensor, Sonar& sonar);
 
-	void prepareComponents();
+	int prepareComponents();
 	void startup();
 
 	void doMovements();
@@ -371,32 +399,37 @@ public:
 };
 
 void Vehicule::doMovements() {
-	string action;
+	string action = socketIO->msgRecv();
 
-	while (1) {
-
-		action = socketIO->msgRecv();
 		cout << action << endl;
 		Motor::TakeAction(action);
-	}
+	
 }
 
 void Vehicule::startup() {
 
+	while (prepareComponents()==1) {
+
+		this->sonar->sendSonarData();
+		this->irSensor->sendIRSensorData();
+		this->doMovements();
+
+	}
+	
 
 
 }
 
-void Vehicule::prepareComponents() {
+int Vehicule::prepareComponents() {
 
 	Motor::motorInitialisation();
-
 	irSensor->irSetup();
 	sonar->setupSonar();
 	socketIO->initSoc();
 	this->status = true;
-	cout << "prepared components" << endl;
+	cout << "Components Ready " << endl;
 
+	return 1;
 }
 Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sonar)
 {
@@ -411,17 +444,14 @@ Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sona
 int main(void) {
 
 
-	Sonar sonar;
-	IRSensor ir1;
+	
 
-	//CarClientSocket socketSend(27017);
-	//socketSend.initSoc();
 	CarClientSocket socketIO(27016);
-	//socketRecv.initSoc();
+	Sonar sonar(socketIO);
+	IRSensor ir1(socketIO);
 	Vehicule v1(socketIO, ir1, sonar);
-	v1.prepareComponents();
-	//v1.startup();
-	v1.doMovements();
+	
+	v1.startup();
 
 	return 0;
 }
