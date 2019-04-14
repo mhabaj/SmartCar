@@ -1,4 +1,3 @@
-/*
 
 
 // Commandes compilation:
@@ -126,9 +125,9 @@ private:
 
 public:
 	IRSensor(CarClientSocket& SocketIR) {
-	
+
 		this->SocketIR = &SocketIR;
-	
+
 	}
 	int irSetup() {
 		if (wiringPiSetupGpio() == -1) {
@@ -150,7 +149,6 @@ public:
 			}
 			else return "ras";
 		}
-		else return "ras";
 	}
 
 	void sendIRSensorData() {
@@ -236,13 +234,17 @@ public:
 	}
 
 	void sendSonarData() {
+		double sonarvalue = getSonar();
+		if (sonarvalue <= 12 && sonarvalue > -1) {
+			SocketSonar->msgEnvoie("1");
+		}
+		else {
+			SocketSonar->msgEnvoie("ras");
 
-		double distanceToSend = getSonar();
-		
-		SocketSonar->msgEnvoie(to_string(distanceToSend));
-			
-		
-		
+		}
+
+
+
 
 
 	}
@@ -342,30 +344,30 @@ public:
 
 		}
 		///////OU BIEN///////
-				if (n==1) {
-					Motor::motorForward();
+		if (n == 1) {
+			Motor::motorForward();
 
-				}
-				else if (n==2) {
-					Motor::motorBackward();
+		}
+		else if (n == 2) {
+			Motor::motorBackward();
 
-				}
-				 else if (n==3) {
-					Motor::motorRightForward();
+		}
+		else if (n == 3) {
+			Motor::motorRightForward();
 
-				}
-				 else if (n==4) {
-					Motor::motorLeftForward();
+		}
+		else if (n == 4) {
+			Motor::motorLeftForward();
 
-				}
-				 else if (n==5) {
-					Motor::motorStop();
+		}
+		else if (n == 5) {
+			Motor::motorStop();
 
-				}
-				else {
-					Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
-				}
-		
+		}
+		else {
+			Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
+		}
+
 	}
 };
 
@@ -390,7 +392,7 @@ public:
 	Vehicule(CarClientSocket& socketIO,
 		IRSensor& irSensor, Sonar& sonar);
 
-	int prepareComponents();
+	void prepareComponents();
 	void startup();
 
 	void doMovements();
@@ -401,26 +403,26 @@ public:
 void Vehicule::doMovements() {
 	string action = socketIO->msgRecv();
 
-		cout << action << endl;
-		Motor::TakeAction(action);
-	
+	cout << action << endl;
+	Motor::TakeAction(action);
+
 }
 
 void Vehicule::startup() {
 
-	while (prepareComponents()==1) {
-
+	this->prepareComponents();
+	while (1) {
 		this->sonar->sendSonarData();
-		this->irSensor->sendIRSensorData();
+		//this->irSensor->sendIRSensorData();
 		this->doMovements();
-
 	}
-	
-
-
 }
 
-int Vehicule::prepareComponents() {
+
+
+
+
+void Vehicule::prepareComponents() {
 
 	Motor::motorInitialisation();
 	irSensor->irSetup();
@@ -429,7 +431,6 @@ int Vehicule::prepareComponents() {
 	this->status = true;
 	cout << "Components Ready " << endl;
 
-	return 1;
 }
 Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sonar)
 {
@@ -444,13 +445,13 @@ Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sona
 int main(void) {
 
 
-	
+
 
 	CarClientSocket socketIO(27016);
 	Sonar sonar(socketIO);
 	IRSensor ir1(socketIO);
 	Vehicule v1(socketIO, ir1, sonar);
-	
+
 	v1.startup();
 
 	return 0;
@@ -494,10 +495,10 @@ int main(void) {
 /*
 int main() {
 
-
+	CarClientSocket socketIO(27016);
+	Sonar s1(socketIO);
 	double distance = 0.0;
 
-	Sonar s1;
 	s1.setupSonar();
 
 
@@ -508,7 +509,7 @@ int main() {
 	return 1;
 }
 
-*/
+
 //main pour tester IR sensor
 /*
 int main(void)
