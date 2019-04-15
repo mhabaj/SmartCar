@@ -412,9 +412,6 @@ int Vehicule::goSmart()
 }
 
 
-
-
-
 int main() {
 
 
