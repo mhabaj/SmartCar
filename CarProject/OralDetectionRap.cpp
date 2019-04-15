@@ -1,4 +1,5 @@
-﻿#define WIN32_LEAN_AND_MEAN
+/*
+#define WIN32_LEAN_AND_MEAN
 
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
@@ -28,7 +29,7 @@ using namespace cv;
 const string Fenetre = "Class Reconnaissance objets.";
 
 
-int ScannerStatus = 1 ;
+int ScannerStatus = 1;
 
 
 class CarServerSocket {
@@ -190,7 +191,7 @@ class ObjectScanner : public DetectionBasedTracker::IDetector
 
 private:
 	vector<Rect> PanneauStopVec, FeuVertVec, FeuRougeVec;
-	string ClassifierTraining ="C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml" ; //URL VERS LES DONNEES DE LENTRAINEMENT.
+	string ClassifierTraining = "C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT.
 	VideoCapture VideoStream;
 	Ptr<CascadeClassifier> Detector;
 
@@ -258,57 +259,57 @@ public:
 			//pointeur sur objet CascadeClassifier :
 			Ptr<CascadeClassifier> cascade = makePtr<CascadeClassifier>(fichierXmlCascade);
 			Ptr<DetectionBasedTracker::IDetector> detect = makePtr<ObjectScanner>(cascade);
-			
+
 
 			cascade = makePtr<CascadeClassifier>(fichierXmlCascade);
 			Ptr<DetectionBasedTracker::IDetector> DetecteurTrack = makePtr<ObjectScanner>(cascade);
-			
+
 
 			DetectionBasedTracker::Parameters params;
 			DetectionBasedTracker Detector(detect, DetecteurTrack, params);
-			Mat RFrame; 
+			Mat RFrame;
 			Mat WFrame;
 
-			while (1) 
+			while (1)
 			{
 
 				while (waitKey(30) < 0)
-				 {
+				{
 					VideoStream >> RFrame;
 					cvtColor(RFrame, WFrame, COLOR_BGR2GRAY);
 					Detector.process(WFrame);
 					Detector.getObjects(PanneauStopVec);
 					for (size_t i = 0; i < PanneauStopVec.size(); i++)
 					{
-					rectangle(RFrame, PanneauStopVec[i], Scalar(0, 100, 0));
+						rectangle(RFrame, PanneauStopVec[i], Scalar(0, 100, 0));
 					}
 					imshow(Fenetre, RFrame);
-					 if (this->PanneauStopVec.size() > 0)
+					if (this->PanneauStopVec.size() > 0)
 					{
 
-						 resetDetection();
+						resetDetection();
 
-							 ScannerStatus = 3;
-					}  
-						 else if (this->PanneauStopVec.size() <= 0) {
-							 resetDetection();
-								 ScannerStatus = 1;							
-						 }
-					 if (waitKey(10) == 27)
-					 {
-						 break;
-					 }
+						ScannerStatus = 3;
+					}
+					else if (this->PanneauStopVec.size() <= 0) {
+						resetDetection();
+						ScannerStatus = 1;
+					}
+					if (waitKey(10) == 27)
+					{
+						break;
+					}
 				}
 			}
-			
+
 			resetDetection();
-			 Detector.stop();
-					
-			
+			Detector.stop();
+
+
 		}
 		return 0;
 	}
-	
+
 
 
 	virtual ~ObjectScanner()
@@ -369,9 +370,9 @@ int Vehicule::returnIfObstacle() {
 	//char ss_array[9] = "obstacle";
 	//strcpy_s(s_array, s.c_str());	
 
-	string infoRecv = s.substr(s.length()-1, 1);
+	string infoRecv = s.substr(s.length() - 1, 1);
 	cout << "INFO RECIEVED: " << infoRecv << endl;
-	 if (infoRecv == "1") {
+	if (infoRecv == "1") {
 		printf("Obstacle Detectee \n");
 		return 1;
 	}
@@ -380,34 +381,34 @@ int Vehicule::returnIfObstacle() {
 int Vehicule::goSmart()
 {
 
-	
-	
+
+
 	while (1)
-	{	
+	{
 		int isObstacle = returnIfObstacle();
 		int z;
-	
-		 if (isObstacle != 1)
+
+		if (isObstacle != 1)
 		{
-					
-			 if (ScannerStatus == 3 || ScannerStatus == 1) {
-				 z = ScannerStatus;
-			 }
-			
-				switch (z)
-				{
-					case 1: this->forward(); cout << "RAS" << endl; break;
-					case 3: this->stop(); cout << "STOP DETECTEE" << endl; break;
-					case 4: this->right(); cout << "TOURNER A DROITE" << endl; break;
-					case 5: this->left(); cout << "TOURNER A GAUCHE" << endl; break;
-					default: this->stop(); break;
-				}
-			
-		 }
-		 else {
-			 this->stop();
-		 }
-		
+
+			if (ScannerStatus == 3 || ScannerStatus == 1) {
+				z = ScannerStatus;
+			}
+
+			switch (z)
+			{
+			case 1: this->forward(); cout << "RAS" << endl; break;
+			case 3: this->stop(); cout << "STOP DETECTEE" << endl; break;
+			case 4: this->right(); cout << "TOURNER A DROITE" << endl; break;
+			case 5: this->left(); cout << "TOURNER A GAUCHE" << endl; break;
+			default: this->stop(); break;
+			}
+
+		}
+		else {
+			this->stop();
+		}
+
 	}
 }
 
@@ -423,26 +424,26 @@ int main() {
 	CarServerSocket SocVoiture(portSend);
 	SocVoiture.initSoc();
 
-	
+
 	ObjectScanner s1;
 	Vehicule v1(SocVoiture, s1);
 
 	//std::thread ObjectScanThread(&s1::sceneScan);
 	std::thread v(&Vehicule::goSmart, v1);
 	std::thread t(&ObjectScanner::sceneScan, s1);
-	
-	
+
+
 	v.join();
 	t.join();
-	
-	
-	
-	//v1.goSmart();
-	
 
-	//on crée la detection de mouvement
-	
-	
+
+
+	//v1.goSmart();
+
+
+	//on cr�e la detection de mouvement
+
+
 
 	return 0;
 }
@@ -505,7 +506,7 @@ int main()
 
 	}
 
-		
+
 return 0;
 }
 
