@@ -18,7 +18,7 @@
 
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
-#define DEFAULT_BUFLEN 16
+#define DEFAULT_BUFLEN 56
 using namespace std;
 using namespace cv;
 
@@ -157,7 +157,7 @@ public:
 		strcpy_s(this->sendBuffer, msgEnvoie.c_str());
 		// on Envoie le message
 		iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
-		this_thread::sleep_for(chrono::milliseconds(50));
+		this_thread::sleep_for(chrono::milliseconds(10));
 		//closesocket(ClientSocket);
 
 	}
@@ -369,17 +369,15 @@ void Vehicule::stop()
 int Vehicule::returnIfObstacle() {
 	//return 1 si obstacle IR, 2 si Sonar, 0 sinon 
 	string s = this->carSoc->msgRecu();
-	char s_array[DEFAULT_BUFLEN];
-	char ss_array[9] = "obstacle";
-	strcpy_s(s_array, s.c_str());	
+	//char s_array[DEFAULT_BUFLEN];
+	//char ss_array[9] = "obstacle";
+	//strcpy_s(s_array, s.c_str());	
 
-	if (strstr(s_array, ss_array) != NULL) {
-		printf("Obstacle Detectee (IR) \n");
+	string infoRecv = s.substr(s.length()-1, 1);
+	cout << "INFO RECIEVED: " << infoRecv << endl;
+	 if (infoRecv == "1") {
+		printf("Obstacle Detectee \n");
 		return 1;
-	}
-	else if (strstr(s_array, "1") != NULL) {
-		printf("Obstacle Detectee (Sonar) \n");
-		return 2;
 	}
 	else return 0;
 }
@@ -388,7 +386,13 @@ void Vehicule::goSmart()
 	while (1) 
 	{
 		int isObstacle = returnIfObstacle();
-		if (isObstacle == 0)
+		 if (isObstacle == 1)
+		{
+		//rajouter un comportement si on rencontre un obstacle via sonar plutot que IR
+		this->stop();
+			
+		}
+		else if (isObstacle == 0)
 		{
 			
 				int foundObj = this->objDetection.sceneScan();
@@ -401,16 +405,9 @@ void Vehicule::goSmart()
 					case 5: this->left(); cout << "TOURNER A GAUCHE" << endl; break;
 					default: this->stop(); break;
 				}
+				Sleep(20);
 		}
-		else if (isObstacle==1) 
-		{ 
-			//rajouter un comportement si on rencontre un obstacle via sonar plutot que IR
-			this->stop(); 
-		}
-		else if (isObstacle == 2) {
-			//rajouter un comportement si on rencontre un obstacle via sonar plutot que IR
-			this->stop();
-		}
+		
 	}
 }
 

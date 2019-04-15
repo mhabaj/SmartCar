@@ -5,8 +5,8 @@
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
-/*
 
+/*
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
 #include <string>
@@ -83,7 +83,7 @@ public:
 		}
 		else {
 			printf("sendto = %d; msg = %s\n", ret, msg);
-			this_thread::sleep_for(chrono::milliseconds(40));
+			this_thread::sleep_for(chrono::milliseconds(10));
 
 		}
 	}
@@ -104,7 +104,7 @@ public:
 		else if (ret == 0) printf("femerutre de la connexion.....\n");
 
 		else {
-			printf("Erreur recv (COnnexion perdu avec le serveur?");
+			printf("Erreur recv (Connexion perdu avec le serveur? \n");
 			shutdown(sd, SHUT_RDWR);
 			close(sd);
 		}
@@ -153,12 +153,10 @@ public:
 		}
 	}
 
-	void sendIRSensorData() {
-		int obstacle = isObstacle();
-		string statusIR;
-		if (obstacle == 1) statusIR = "obstacle";
-		if (obstacle == 0) statusIR = "ras";
-		SocketIR->msgEnvoie(statusIR);
+	void sendIRSensorData(int irData) {
+
+
+		SocketIR->msgEnvoie(to_string(irData));
 
 	}
 };
@@ -239,21 +237,27 @@ public:
 
 	}
 
-	void sendSonarData() {
+	int retSonarData() {
 		double sonarvalue = getSonar();
 		if (sonarvalue <= 12 && sonarvalue > -1) {
-			SocketSonar->msgEnvoie("1");
+			return 1;
+			//SocketSonar->msgEnvoie("1");
 		}
 		else {
-			SocketSonar->msgEnvoie("ras");
+			return 0;
 
+			//SocketSonar->msgEnvoie("0");
 		}
-
-
-
 
 
 	}
+
+	void sendSonarData(int SonarData) {
+		SocketSonar->msgEnvoie(to_string(SonarData));
+
+
+	}
+
 
 };
 
@@ -402,14 +406,29 @@ public:
 	void startup();
 
 	void doMovements();
-
+	bool sendInfo();
 
 };
+bool Vehicule::sendInfo() {
+	int isObstacleReact = irSensor->isObstacle();
+	int isSonarReact = sonar->retSonarData();
+	if (isObstacleReact == 1) {
+		irSensor->sendIRSensorData(1);
+		return true;
 
+	}
+	else if (isSonarReact == 1) {
+		sonar->sendSonarData(1);
+	}
+	else {
+		irSensor->sendIRSensorData(0);
+
+	}
+}
 void Vehicule::doMovements() {
-	string action = socketIO->msgRecv();
-
-	cout << action << endl;
+	string actionTemp = socketIO->msgRecv();
+	string action = actionTemp.substr(actionTemp.length() - 1, 1);
+	cout << "action demandee: " << action << endl;
 	Motor::TakeAction(action);
 
 }
@@ -418,24 +437,24 @@ void Vehicule::startup() {
 
 	this->prepareComponents();
 	while (1) {
-		//this->sonar->sendSonarData();
-		this->irSensor->sendIRSensorData();
+		this->sendInfo();
 		this->doMovements();
 	}
 }
 
 
-
-
-
 void Vehicule::prepareComponents() {
+	cout << "preparing Components.. " << endl;
 
 	Motor::motorInitialisation();
 	irSensor->irSetup();
 	sonar->setupSonar();
 	socketIO->initSoc();
 	this->status = true;
-	cout << "Components Ready " << endl;
+	sleep(1);
+
+	cout << "Ready. " << endl;
+
 
 }
 Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sonar)
