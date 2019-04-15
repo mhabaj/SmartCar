@@ -5,8 +5,8 @@
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
-
 /*
+
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
 #include <string>
@@ -33,6 +33,144 @@ const char hostname[] = "192.168.43.244";
 
 
 
+class Motor {
+
+	//Parametres Wiring Pi moteurs:
+#define motorPin1	5	//forward
+#define motorPin2	6	//backward
+#define leftPin	12	//gauche
+#define rightPin 13	//droite
+public:
+
+	static void motorStop() {
+		digitalWrite(motorPin1, LOW);
+		digitalWrite(motorPin2, LOW);
+		digitalWrite(leftPin, LOW);
+		digitalWrite(rightPin, LOW);
+
+
+		printf("Stop...\n");
+	}
+
+	static void CleanGPIO(int signum) {
+		motorStop();
+		cout << "Arret en cours" << endl;
+
+		pinMode(motorPin1, INPUT);
+		pinMode(motorPin2, INPUT);
+		pinMode(leftPin, INPUT);
+		pinMode(rightPin, INPUT);
+		sleep(2);
+		cout << "nettoyage reussi \n" << endl;
+		exit(signum);
+	}
+
+	static void resetGPIO() {
+		pinMode(motorPin1, INPUT);
+		pinMode(motorPin2, INPUT);
+		pinMode(leftPin, INPUT);
+		pinMode(rightPin, INPUT);
+		cout << "Reset reussi" << endl;
+
+	}
+
+	static void motorForward() {
+		digitalWrite(motorPin2, LOW);
+		digitalWrite(leftPin, LOW);
+		digitalWrite(rightPin, LOW);
+		digitalWrite(motorPin1, HIGH);
+
+		printf("Forward...\n");
+	}
+	static void motorBackward() {
+		digitalWrite(motorPin1, LOW);
+		digitalWrite(leftPin, LOW);
+		digitalWrite(rightPin, LOW);
+		digitalWrite(motorPin2, HIGH);
+
+		printf("Backward...\n");
+
+	}
+
+	static void motorRightForward() {
+		digitalWrite(leftPin, LOW);
+		digitalWrite(motorPin2, LOW);
+		digitalWrite(rightPin, HIGH);
+		this_thread::sleep_for(chrono::milliseconds(500));
+		digitalWrite(motorPin1, HIGH);
+
+
+		printf("RightForward...\n");
+	}
+	static void motorLeftForward() {
+		digitalWrite(rightPin, LOW);
+		digitalWrite(motorPin2, LOW);
+		digitalWrite(leftPin, HIGH);
+		this_thread::sleep_for(chrono::milliseconds(500));
+		digitalWrite(motorPin1, HIGH);
+
+		printf("LEFTForward...\n");
+	}
+	static int motorInitialisation() {
+
+		if (wiringPiSetupGpio() == -1) { //when initialize wiring failed,print messageto screen
+			printf("setup wiringPi failed !");
+			return -1;
+		}
+
+		signal(SIGINT, CleanGPIO);
+		resetGPIO();
+		pinMode(motorPin1, OUTPUT);//set mode for the pin
+		pinMode(motorPin2, OUTPUT);
+		pinMode(leftPin, OUTPUT);
+		pinMode(rightPin, OUTPUT);
+		return 1;
+	}
+
+	static void TakeAction(string action) {
+		int n = std::stoi(action);
+		cout << "ACTION RECUUUUUUUUUUUUUUUUUU" << n << endl;
+		switch (n) {
+		case 1: Motor::motorForward();  break;
+		case 2: Motor::motorBackward(); break;
+		case 4: Motor::motorLeftForward(); break;
+		case 3: Motor::motorRightForward(); break;
+		case 5: Motor::motorStop(); break;
+		default: Motor::motorStop(); cout << "Commande deplacement invalide" << endl; break;
+
+
+		}
+		///////OU BIEN///////
+		if (n == 1) {
+			Motor::motorForward();
+
+		}
+		else if (n == 2) {
+			Motor::motorBackward();
+
+		}
+		else if (n == 3) {
+			Motor::motorRightForward();
+
+		}
+		else if (n == 4) {
+			Motor::motorLeftForward();
+
+		}
+		else if (n == 5) {
+			Motor::motorStop();
+
+		}
+		else {
+			Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
+		}
+
+	}
+
+};
+
+
+
 class CarClientSocket {
 private:
 
@@ -49,7 +187,7 @@ public:
 		this->portnum = portnum;
 
 	}
-	void initSoc() {
+	bool initSoc() {
 
 
 		if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -58,7 +196,7 @@ public:
 			exit(0);
 		}
 		else
-			printf("socket = %d connectee sur le port %d\n", sd, portnum);
+			printf("socket = %d connexion possible sur le port %d\n", sd, portnum);
 
 
 		if ((host = gethostbyname(hostname)) == NULL) {
@@ -73,6 +211,7 @@ public:
 
 		connect(sd, (const struct sockaddr*)&addrsrv, sizeof(addrsrv));
 		this->isConnected = true;
+		return true;
 
 	}
 
@@ -104,9 +243,11 @@ public:
 		else if (ret == 0) printf("femerutre de la connexion.....\n");
 
 		else {
-			printf("Erreur recv (Connexion perdu avec le serveur? \n");
+			printf(" Communication avec serveur interrompu \n");
 			shutdown(sd, SHUT_RDWR);
 			close(sd);
+			Motor::CleanGPIO(0);
+
 		}
 		exit(1);
 
@@ -239,7 +380,7 @@ public:
 
 	int retSonarData() {
 		double sonarvalue = getSonar();
-		if (sonarvalue <= 12 && sonarvalue > -1) {
+		if (sonarvalue <= 40 && sonarvalue > -1) {
 			return 1;
 			//SocketSonar->msgEnvoie("1");
 		}
@@ -263,126 +404,6 @@ public:
 
 
 
-class Motor {
-
-	//Parametres Wiring Pi moteurs:
-#define motorPin1	5	//forward
-#define motorPin2	6	//backward
-#define leftPin	12	//gauche
-#define rightPin 13	//droite
-public:
-
-	static void CleanGPIO(int signum) {
-		pinMode(motorPin1, INPUT);
-		pinMode(motorPin2, INPUT);
-		pinMode(leftPin, INPUT);
-		pinMode(rightPin, INPUT);
-		cout << "nettoyage reussi" << endl;
-		exit(signum);
-	}
-	static void motorForward() {
-		digitalWrite(motorPin2, LOW);
-		digitalWrite(leftPin, LOW);
-		digitalWrite(rightPin, LOW);
-		digitalWrite(motorPin1, HIGH);
-
-		printf("Forward...\n");
-	}
-	static void motorBackward() {
-		digitalWrite(motorPin1, LOW);
-		digitalWrite(leftPin, LOW);
-		digitalWrite(rightPin, LOW);
-		digitalWrite(motorPin2, HIGH);
-
-		printf("Backward...\n");
-
-	}
-	static void motorStop() {
-		digitalWrite(motorPin1, LOW);
-		digitalWrite(motorPin2, LOW);
-		digitalWrite(leftPin, LOW);
-		digitalWrite(rightPin, LOW);
-
-
-		printf("Stop...\n");
-	}
-	static void motorRightForward() {
-		digitalWrite(leftPin, LOW);
-		digitalWrite(motorPin2, LOW);
-		digitalWrite(rightPin, HIGH);
-		this_thread::sleep_for(chrono::milliseconds(500));
-		digitalWrite(motorPin1, HIGH);
-
-
-		printf("RightForward...\n");
-	}
-	static void motorLeftForward() {
-		digitalWrite(rightPin, LOW);
-		digitalWrite(motorPin2, LOW);
-		digitalWrite(leftPin, HIGH);
-		this_thread::sleep_for(chrono::milliseconds(500));
-		digitalWrite(motorPin1, HIGH);
-
-		printf("LEFTForward...\n");
-	}
-	static int motorInitialisation() {
-
-		if (wiringPiSetupGpio() == -1) { //when initialize wiring failed,print messageto screen
-			printf("setup wiringPi failed !");
-			return -1;
-		}
-
-		signal(SIGINT, CleanGPIO);
-		pinMode(motorPin1, OUTPUT);//set mode for the pin
-		pinMode(motorPin2, OUTPUT);
-		pinMode(leftPin, OUTPUT);
-		pinMode(rightPin, OUTPUT);
-		return 1;
-	}
-
-	static void TakeAction(string action) {
-		int n = std::stoi(action);
-
-		switch (n) {
-		case 1: Motor::motorForward();  break;
-		case 2: Motor::motorBackward(); break;
-		case 4: Motor::motorLeftForward(); break;
-		case 3: Motor::motorRightForward(); break;
-		case 5: Motor::motorStop(); break;
-		default: Motor::motorStop(); cout << "Commande deplacement invalide" << endl; break;
-
-
-		}
-		///////OU BIEN///////
-		if (n == 1) {
-			Motor::motorForward();
-
-		}
-		else if (n == 2) {
-			Motor::motorBackward();
-
-		}
-		else if (n == 3) {
-			Motor::motorRightForward();
-
-		}
-		else if (n == 4) {
-			Motor::motorLeftForward();
-
-		}
-		else if (n == 5) {
-			Motor::motorStop();
-
-		}
-		else {
-			Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
-		}
-
-	}
-};
-
-
-
 
 
 
@@ -402,11 +423,12 @@ public:
 	Vehicule(CarClientSocket& socketIO,
 		IRSensor& irSensor, Sonar& sonar);
 
-	void prepareComponents();
+	int prepareComponents();
 	void startup();
 
 	void doMovements();
 	bool sendInfo();
+	~Vehicule();
 
 };
 bool Vehicule::sendInfo() {
@@ -425,6 +447,18 @@ bool Vehicule::sendInfo() {
 
 	}
 }
+Vehicule::~Vehicule()
+{
+	Motor::resetGPIO();
+	delete socketIO;
+	delete irSensor;
+	delete sonar;
+
+	cout << "Vehicule detruit" << endl;
+
+
+
+}
 void Vehicule::doMovements() {
 	string actionTemp = socketIO->msgRecv();
 	string action = actionTemp.substr(actionTemp.length() - 1, 1);
@@ -435,25 +469,33 @@ void Vehicule::doMovements() {
 
 void Vehicule::startup() {
 
-	this->prepareComponents();
-	while (1) {
-		this->sendInfo();
-		this->doMovements();
+	if (this->prepareComponents() == 1) {
+		while (1) {
+			this->sendInfo();
+			this->doMovements();
+		}
+	}
+	else {
+		cout << "PrepareComponents Error" << endl;
+		exit(0);
 	}
 }
 
-
-void Vehicule::prepareComponents() {
+int Vehicule::prepareComponents() {
 	cout << "preparing Components.. " << endl;
 
 	Motor::motorInitialisation();
 	irSensor->irSetup();
 	sonar->setupSonar();
-	socketIO->initSoc();
-	this->status = true;
-	sleep(1);
+	if (socketIO->initSoc() == true) {
+		this->status = true;
+		sleep(2);
 
-	cout << "Ready. " << endl;
+		cout << "Ready. " << endl;
+		return 1;
+	}
+	else return 0;
+
 
 
 }

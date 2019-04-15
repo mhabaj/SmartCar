@@ -164,7 +164,7 @@ public:
 		strcpy_s(this->sendBuffer, msgEnvoie.c_str());
 		// on Envoie le message
 		iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
-		this_thread::sleep_for(chrono::milliseconds(30));
+		this_thread::sleep_for(chrono::milliseconds(35));
 		//closesocket(ClientSocket);
 
 	}
@@ -204,7 +204,8 @@ public:
 	{
 		VideoCapture camTemp; //pour webcam locale
 		//camTemp.open(0);
-		camTemp.open("http://192.168.43.109:8080/video");
+		//camTemp.open("http://192.168.43.109:8080/video");
+		camTemp.open("http://192.168.43.103:8081/");
 		//camTemp.open(this->videoSourceURL); //(pour la video par internet)
 		if (!camTemp.isOpened())
 		{
@@ -249,7 +250,6 @@ public:
 		this->VideoStream = lancerCam();
 		namedWindow(Fenetre);
 
-		//VideoCapture VideoStream(0);
 
 		if (isVideoStreamOpened(VideoStream)) {
 			//on include le .XML de l'entrainement

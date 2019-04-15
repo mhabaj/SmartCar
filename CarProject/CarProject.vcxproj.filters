@@ -42,7 +42,7 @@
     <ClCompile Include="mainClient.cpp">
       <Filter>Fichiers sources\Raspberry</Filter>
     </ClCompile>
-    <ClCompile Include="oldDetector.cpp">
+    <ClCompile Include="OralDetectionRap.cpp">
       <Filter>Fichiers sources\PC</Filter>
     </ClCompile>
   </ItemGroup>
