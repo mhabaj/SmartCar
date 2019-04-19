@@ -62,7 +62,7 @@ public:
 
 		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (iResult != 0) {
-			printf("Erreur initialisation Socket WSA : %d\n", iResult);
+			printf("Error init Socket WSA : %d\n", iResult);
 			return 1;
 		}
 
@@ -76,7 +76,7 @@ public:
 		// Initialisaation address local du serveur et le PORT.
 		iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
 		if (iResult != 0) {
-			printf("erreur dans la fonction getaddrinfo: %d\n", iResult);
+			printf("error fonction getaddrinfo: %d\n", iResult);
 			WSACleanup();
 			return 1;
 		}
@@ -84,7 +84,7 @@ public:
 		// Creation de socket:
 		ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 		if (ListenSocket == INVALID_SOCKET) {
-			printf("socket failed with error: %ld\n", WSAGetLastError());
+			printf(" error: %ld\n", WSAGetLastError());
 			freeaddrinfo(result);
 			WSACleanup();
 			return 1;
@@ -93,7 +93,7 @@ public:
 		// Initialisation du protocole TCP du Socket:
 		iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
 		if (iResult == SOCKET_ERROR) {
-			printf("erreur bind(): %d\n", WSAGetLastError());
+			printf("error bind(): %d\n", WSAGetLastError());
 			freeaddrinfo(result);
 			closesocket(ListenSocket);
 			WSACleanup();
@@ -104,7 +104,7 @@ public:
 
 		iResult = listen(ListenSocket, SOMAXCONN);
 		if (iResult == SOCKET_ERROR) {
-			printf("Erreur listen(): %d\n", WSAGetLastError());
+			printf("Error listen(): %d\n", WSAGetLastError());
 			closesocket(ListenSocket);
 			WSACleanup();
 			return 1;
@@ -121,7 +121,7 @@ public:
 
 		// On met la socket en Attente
 		closesocket(ListenSocket);
-		cout << "Chargement.." << endl;
+		cout << "loading.." << endl; //(On met un peu de temps de chargement pour etre sur que les deux parties sont pret)
 		Sleep(2000);
 		return 0;
 	}
@@ -191,8 +191,9 @@ class ObjectScanner : public DetectionBasedTracker::IDetector
 {
 
 private:
-	vector<Rect> PanneauStopVec, FeuTraffic;
+	vector<Rect> PanneauStopVec, FeuTrafficVec, VirageDroiteVec;
 	string ClassifierTrainingStop ="C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml" ; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
+	string ClassifierTrainingVirageDroite ="C:/Users/mhaba/OneDrive/Desktop/DirectionV2.xml" ; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
 	string ClassifierTrainingFeuRouge = "C:/Users/mhaba/OneDrive/Desktop/PanneauFeuxRouge.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.
 
 	
@@ -202,9 +203,7 @@ private:
 
 
 public:
-	int retScannerStatus() {
-		//return this->ScannerStatus;
-	}
+	
 	VideoCapture lancerCam()
 	{
 		VideoCapture camTemp; //pour webcam locale
@@ -247,7 +246,9 @@ public:
 	void resetDetection() {
 
 		this->PanneauStopVec.clear();
-		this->FeuTraffic.clear();
+		this->FeuTrafficVec.clear();
+		this->VirageDroiteVec.clear();
+
 		//Sleep(20);
 	}
 	int sceneScan() {
@@ -259,65 +260,84 @@ public:
 			//on include le .XML de l'entrainement
 			std::string fichierXmlCascadeStop = samples::findFile(this->ClassifierTrainingStop);
 			std::string fichierXmlCascadeRouge = samples::findFile(this->ClassifierTrainingFeuRouge);
+			std::string fichierXmlVirageDroite = samples::findFile(this->ClassifierTrainingVirageDroite);
 
 			//pointeur sur objet CascadeClassifier :
 			Ptr<CascadeClassifier> cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
 			Ptr<CascadeClassifier> cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
+			Ptr<CascadeClassifier> cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
 
 			Ptr<DetectionBasedTracker::IDetector> detectStop = makePtr<ObjectScanner>(cascadeStop);
 			Ptr<DetectionBasedTracker::IDetector> detectFeuxRouge = makePtr<ObjectScanner>(cascadeFeuxRouge);
+			Ptr<DetectionBasedTracker::IDetector> detectVirageDroite = makePtr<ObjectScanner>(cascadeVirageDroite);
 
 
 			cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
 			cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
+			cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
 
 			Ptr<DetectionBasedTracker::IDetector> DetecteurStop = makePtr<ObjectScanner>(cascadeStop);
 			Ptr<DetectionBasedTracker::IDetector> DetecteurFeuxRouge = makePtr<ObjectScanner>(cascadeFeuxRouge);
+			Ptr<DetectionBasedTracker::IDetector> DetecteurVirageDroite = makePtr<ObjectScanner>(cascadeVirageDroite);
 			DetectionBasedTracker::Parameters params;
 			DetectionBasedTracker DetectorStop(detectStop, DetecteurStop, params);
 			DetectionBasedTracker DetectorFeuxRouge(detectFeuxRouge, DetecteurFeuxRouge, params);
+			DetectionBasedTracker DetectorVirageDroite(detectVirageDroite, DetecteurVirageDroite, params);
 
 			Mat RFrame; 
 			Mat WFrame;
-			Mat gaussBlur;
 			
 				while (waitKey(30) < 0)
 				 {
 					VideoStream >> RFrame;
 					cvtColor(RFrame, WFrame, COLOR_BGR2GRAY);
-					//traitement pour feux rouge
+					
 
-					DetectorStop.process(WFrame);
-					DetectorStop.getObjects(PanneauStopVec);
+					////////////Feu Rouge:
 					//traitement pour feux rouges
 					//GaussianBlur(WFrame, gaussBlur, Size(25, 25), 0);
 					DetectorFeuxRouge.process(WFrame);
-					DetectorFeuxRouge.getObjects(FeuTraffic);
+					DetectorFeuxRouge.getObjects(FeuTrafficVec);
+					/////////////////Virags Droite:
+					DetectorVirageDroite.process(WFrame);
+					DetectorVirageDroite.getObjects(VirageDroiteVec);
+					///////////////PanneauStop
+					DetectorStop.process(WFrame);
+					DetectorStop.getObjects(PanneauStopVec);
+
+
 
 					for (size_t i = 0; i < PanneauStopVec.size(); i++)
 					{
-						rectangle(RFrame, PanneauStopVec[i], Scalar(0, 100, 0));
+						rectangle(RFrame, PanneauStopVec[i], Scalar(10, 100, 0));
 					}
-					for (size_t i = 0; i < FeuTraffic.size(); i++)
+					for (size_t i = 0; i < FeuTrafficVec.size(); i++)
 					{
-						rectangle(RFrame, FeuTraffic[i], Scalar(0, 100, 0));
+						rectangle(RFrame, FeuTrafficVec[i], Scalar(50, 400, 10));
 					}
 					imshow(Fenetre, RFrame);
-					 if (this->PanneauStopVec.size() > 0)
+					
+					for (size_t i = 0; i < VirageDroiteVec.size(); i++)
+					{
+						rectangle(RFrame, VirageDroiteVec[i], Scalar(50, 400, 10));
+					}
+					imshow(Fenetre, RFrame);
+					
+					if (this->PanneauStopVec.size() > 0)
 					{
 
 						 resetDetection();
 
 							 ScannerStatus = 3;
 					}
-					 else if (this->FeuTraffic.size() > 0)
+					 else if (this->FeuTrafficVec.size() > 0)
 					 {
 
 						 resetDetection();
 
 						 ScannerStatus = 4;
 					 }
-					 else if (this->PanneauStopVec.size() <= 0 && this->FeuTraffic.size() <= 0) {
+					 else if (this->PanneauStopVec.size() <= 0 && this->FeuTrafficVec.size() <= 0) {
 							resetDetection();
 							ScannerStatus = 1;							
 						 }
@@ -391,6 +411,7 @@ void Vehicule::left()
 void Vehicule::stop()
 {
 	this->backward(); //pour arreter les roues rapidement
+	Sleep(30);
 	this->carSoc->msgEnvoi("5");
 }
 int Vehicule::returnIfObstacle() {
@@ -425,6 +446,7 @@ void Vehicule::stopSignManeuver()
 void Vehicule::redTrafficLightManeuver()
 {
 	this->stop();
+	Sleep(100);
 	while (ScannerStatus == 4) {Sleep(50);}
 	while (returnIfObstacle() == 1) {
 		cout << "Obstacle detectee, On reste sur place" << endl;
@@ -438,7 +460,7 @@ void Vehicule::redTrafficLightManeuver()
 int Vehicule::goSmart()
 {
 	cout << "Preparing components" << endl;
-	Sleep(3000);
+	Sleep(5000);
 
 	while (1)
 	{	
@@ -456,7 +478,7 @@ int Vehicule::goSmart()
 				{
 					case 1: this->forward(); cout << "RAS" << endl; break;
 					case 3:  cout << "STOP DETECTEE" << endl; this->stopSignManeuver(); break;
-					case 4: this->stop(); cout << "FEU DETECTEE" << endl; break;
+					case 4:  cout << "FEU DETECTEE" << endl; this->redTrafficLightManeuver(); break;
 					case 5: this->stop(); cout << "TOURNER A GAUCHE" << endl; break;
 					default: this->stop(); break;
 				}
