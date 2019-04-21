@@ -25,10 +25,20 @@
 #define DEFAULT_BUFLEN 56
 using namespace std;
 using namespace cv;
-const string Fenetre = "Class Reconnaissance objets.";
+const int NothingDetected = 1;
+const int stopDetected = 3;
+const int trafficLightsDetected = 4;
+const int turnRightDetected = 5;
+const int turnLeftDetected = 6;
+////////////////////////////////////
+const string forwardAction = "1";
+const string BackwardAction = "2";
+const string rightAction = "3";
+const string leftAction = "4";
+const string stopAction = "5";
 
 
-int ScannerStatus = 1 ; // 1 pour rien , 3 pour Stop, 4 feu Rouge
+int ScannerStatus = -1; 
 
 
 class CarServerSocket {
@@ -36,332 +46,335 @@ class CarServerSocket {
 private:
 	WSADATA wsaData;
 	int iResult;
-
 	SOCKET ListenSocket = INVALID_SOCKET;
 	SOCKET ClientSocket = INVALID_SOCKET;
 	char* DEFAULT_PORT;
 	struct addrinfo *result = NULL;
 	struct addrinfo hints;
-
 	int iSendResult;
 	char recvbuf[DEFAULT_BUFLEN];
 	int recvbuflen = DEFAULT_BUFLEN;
 	char sendBuffer[DEFAULT_BUFLEN];
 
-
 public:
 
-	CarServerSocket(string DEFAULT_PORT) {
-		char * cstr = new char[DEFAULT_PORT.length() + 1];
-		strcpy_s(cstr, 6, DEFAULT_PORT.c_str());
-		this->DEFAULT_PORT = cstr;
-	}
-
-	int  initSoc() {
-
-
-		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-		if (iResult != 0) {
-			printf("Error init Socket WSA : %d\n", iResult);
-			return 1;
-		}
-
-		//les params de la socket:
-		ZeroMemory(&hints, sizeof(hints));
-		hints.ai_family = AF_INET;
-		hints.ai_socktype = SOCK_STREAM;
-		hints.ai_protocol = IPPROTO_TCP;
-		hints.ai_flags = AI_PASSIVE;
-
-		// Initialisaation address local du serveur et le PORT.
-		iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-		if (iResult != 0) {
-			printf("error fonction getaddrinfo: %d\n", iResult);
-			WSACleanup();
-			return 1;
-		}
-
-		// Creation de socket:
-		ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-		if (ListenSocket == INVALID_SOCKET) {
-			printf(" error: %ld\n", WSAGetLastError());
-			freeaddrinfo(result);
-			WSACleanup();
-			return 1;
-		}
-
-		// Initialisation du protocole TCP du Socket:
-		iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-		if (iResult == SOCKET_ERROR) {
-			printf("error bind(): %d\n", WSAGetLastError());
-			freeaddrinfo(result);
-			closesocket(ListenSocket);
-			WSACleanup();
-			return 1;
-		}
-
-		freeaddrinfo(result);
-
-		iResult = listen(ListenSocket, SOMAXCONN);
-		if (iResult == SOCKET_ERROR) {
-			printf("Error listen(): %d\n", WSAGetLastError());
-			closesocket(ListenSocket);
-			WSACleanup();
-			return 1;
-		}
-
-		// Lors qu'un client tent de se connecter:
-		if (ClientSocket = accept(ListenSocket, NULL, NULL)) printf("\nclient initialisee \n");
-		if (ClientSocket == INVALID_SOCKET) {
-			printf("accept failed with error: %d\n", WSAGetLastError());
-			closesocket(ListenSocket);
-			WSACleanup();
-			return 1;
-		}
-
-		// On met la socket en Attente
-		closesocket(ListenSocket);
-		cout << "loading.." << endl; //(On met un peu de temps de chargement pour etre sur que les deux parties sont pret)
-		Sleep(2000);
-		return 0;
-	}
-
-	string msgRecu() {
-
-		string msg = "";
-		this->iResult = recv(this->ClientSocket, this->recvbuf, this->recvbuflen, 0);
-
-		if (this->iResult > 0)
-		{
-
-
-			for (int i = 0; i < this->iResult; i++)
-			{
-				msg += this->recvbuf[i];
-			}
-			return msg;
-
-
-
-		}
-
-		else if (iResult == 0)
-			printf("femerutre de la connexion.....\n");
-
-		else {
-			printf("recv failed with error: %d\n", WSAGetLastError());
-			closesocket(ClientSocket);
-			WSACleanup();
-
-		}
-
-		exit(1);
-	}
-
-	void msgEnvoi(string msgEnvoie) {
-		//le message sera 1 ou 2 ou 3 donc char[1]
-		//char envoiebuff[1] = { msg };
-
-		int n = msgEnvoie.length();
-		strcpy_s(this->sendBuffer, msgEnvoie.c_str());
-		// on Envoie le message
-		iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
-		this_thread::sleep_for(chrono::milliseconds(35));
-		//closesocket(ClientSocket);
-
-	}
-
-	int returniResult() {
-		return this->iResult;
-	}
-
-	~CarServerSocket() {
-
-		closesocket(ClientSocket);
-		WSACleanup();
-		cout << "\n SocketDetruit \n" << endl;
-	}
+	CarServerSocket(string DEFAULT_PORT);
+	int  initSoc();
+	string msgRecu();
+	void msgEnvoi(string msgEnvoie);
+	int returniResult();
+	~CarServerSocket();
 };
 
+CarServerSocket::CarServerSocket(string DEFAULT_PORT) {
+	char * cstr = new char[DEFAULT_PORT.length() + 1];
+	strcpy_s(cstr, 6, DEFAULT_PORT.c_str());
+	this->DEFAULT_PORT = cstr;
+}
+int CarServerSocket::initSoc() {
+
+
+	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (iResult != 0) {
+		printf("Error init Socket WSA : %d\n", iResult);
+		return 1;
+	}
+
+	//les params de la socket:
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	hints.ai_flags = AI_PASSIVE;
+
+	// Initialisaation address local du serveur et le PORT.
+	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+	if (iResult != 0) {
+		printf("error fonction getaddrinfo: %d\n", iResult);
+		WSACleanup();
+		return 1;
+	}
+
+	// Creation de socket:
+	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	if (ListenSocket == INVALID_SOCKET) {
+		printf(" error: %ld\n", WSAGetLastError());
+		freeaddrinfo(result);
+		WSACleanup();
+		return 1;
+	}
+
+	// Initialisation du protocole TCP du Socket:
+	iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+	if (iResult == SOCKET_ERROR) {
+		printf("error bind(): %d\n", WSAGetLastError());
+		freeaddrinfo(result);
+		closesocket(ListenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	freeaddrinfo(result);
+
+	iResult = listen(ListenSocket, SOMAXCONN);
+	if (iResult == SOCKET_ERROR) {
+		printf("Error listen(): %d\n", WSAGetLastError());
+		closesocket(ListenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	// Lors qu'un client tent de se connecter:
+	if (ClientSocket = accept(ListenSocket, NULL, NULL)) printf("\nclient initialisee \n");
+	if (ClientSocket == INVALID_SOCKET) {
+		printf("accept failed with error: %d\n", WSAGetLastError());
+		closesocket(ListenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	// On met la socket en Attente
+	closesocket(ListenSocket);
+	cout << "loading.." << endl; //(On met un peu de temps de chargement pour etre sur que les deux parties sont pret)
+	Sleep(2000);
+	return 0;
+}
+string CarServerSocket::msgRecu() {
+
+	string msg = "";
+	this->iResult = recv(this->ClientSocket, this->recvbuf, this->recvbuflen, 0);
+
+	if (this->iResult > 0)
+	{
+
+
+		for (int i = 0; i < this->iResult; i++)
+		{
+			msg += this->recvbuf[i];
+		}
+		return msg;
+
+
+
+	}
+
+	else if (iResult == 0)
+		printf("femerutre de la connexion.....\n");
+
+	else {
+		printf("recv failed with error: %d\n", WSAGetLastError());
+		closesocket(ClientSocket);
+		WSACleanup();
+
+	}
+
+	exit(1);
+}
+void CarServerSocket::msgEnvoi(string msgEnvoie) {
+	//le message sera 1 ou 2 ou 3 ..etc donc char[1]
+	//char envoiebuff[1] = { msg };
+
+	int n = msgEnvoie.length();
+	strcpy_s(this->sendBuffer, msgEnvoie.c_str());
+	// on Envoie le message
+	iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
+	this_thread::sleep_for(chrono::milliseconds(35));
+	//closesocket(ClientSocket);
+}
+int CarServerSocket::returniResult() {
+
+	return this->iResult;
+}
+CarServerSocket::~CarServerSocket() {
+	closesocket(ClientSocket);
+	WSACleanup();
+	cout << "\n SocketDetruit \n" << endl;
+}
 
 
 
 
 class ObjectScanner : public DetectionBasedTracker::IDetector
 {
-
 private:
-	vector<Rect> PanneauStopVec, FeuTrafficVec, VirageDroiteVec;
-	string ClassifierTrainingStop ="C:/Users/mhaba/OneDrive/Desktop/stopsign_classifier.xml" ; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
-	string ClassifierTrainingVirageDroite ="C:/Users/mhaba/OneDrive/Desktop/DirectionV2.xml" ; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
-	string ClassifierTrainingFeuRouge = "C:/Users/mhaba/OneDrive/Desktop/PanneauFeuxRouge.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.
-
-	
+	vector<Rect> PanneauStopVec, FeuTrafficVec, VirageDroiteVec, VirageGaucheVec;
+	string ClassifierTrainingStop ="C:/Users/mhaba/OneDrive/Desktop/StopSign.xml" ; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
+	string ClassifierTrainingFeuRouge = "C:/Users/mhaba/OneDrive/Desktop/TrafficLights.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.
+	string ClassifierTrainingVirageDroite = "C:/Users/mhaba/OneDrive/Desktop/DirectionRight.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
+	string ClassifierTrainingVirageGauche = "C:/Users/mhaba/OneDrive/Desktop/DirectionLeft.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.	
 	VideoCapture VideoStream;
+	string videoSourceURL = "http://192.168.43.109:8080/video";
 	Ptr<CascadeClassifier> Detector;
-
-
 
 public:
 	
-	VideoCapture lancerCam()
-	{
-		VideoCapture camTemp; //pour webcam locale
-		//camTemp.open(0);
-		camTemp.open("http://192.168.43.109:8080/video");
-		//camTemp.open("http://192.168.43.103:8081/");
-		//camTemp.open(this->videoSourceURL); //(pour la video par internet)
-		if (!camTemp.isOpened())
-		{
-			cout << "ERREUR CHARGEMENT FLUX VIDEO" << endl;
-			exit(0);
-		}
-		return camTemp;
-	}
-
-	ObjectScanner() {
-		//namedWindow(Fenetre);
-		//this->VideoStream = lancerCam();
-	};
-	ObjectScanner(Ptr<CascadeClassifier> detector) : IDetector(), Detector(detector)
-	{
-		CV_Assert(detector);
-	}
-	//detectMultiScale permet de retourner les objets trouvees sous une liste de rectangles.
-	void detect(const Mat &Image, std::vector<Rect> &objects)
-	{
-		Detector->detectMultiScale(Image, objects, scaleFactor, minNeighbours, 0, minObjSize, maxObjSize);
-
-	}
-	bool isVideoStreamOpened(VideoCapture VideoStream) {
-
-		if (!VideoStream.isOpened())
-		{
-			printf("Erreur Camera\n");
-			return false;
-		}
-		else
-			return true;
-	}
-	void resetDetection() {
-
-		this->PanneauStopVec.clear();
-		this->FeuTrafficVec.clear();
-		this->VirageDroiteVec.clear();
-
-		//Sleep(20);
-	}
-	int sceneScan() {
-		this->VideoStream = lancerCam();
-		namedWindow(Fenetre);
-
-
-		if (isVideoStreamOpened(VideoStream)) {
-			//on include le .XML de l'entrainement
-			std::string fichierXmlCascadeStop = samples::findFile(this->ClassifierTrainingStop);
-			std::string fichierXmlCascadeRouge = samples::findFile(this->ClassifierTrainingFeuRouge);
-			std::string fichierXmlVirageDroite = samples::findFile(this->ClassifierTrainingVirageDroite);
-
-			//pointeur sur objet CascadeClassifier :
-			Ptr<CascadeClassifier> cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
-			Ptr<CascadeClassifier> cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
-			Ptr<CascadeClassifier> cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
-
-			Ptr<DetectionBasedTracker::IDetector> detectStop = makePtr<ObjectScanner>(cascadeStop);
-			Ptr<DetectionBasedTracker::IDetector> detectFeuxRouge = makePtr<ObjectScanner>(cascadeFeuxRouge);
-			Ptr<DetectionBasedTracker::IDetector> detectVirageDroite = makePtr<ObjectScanner>(cascadeVirageDroite);
-
-
-			cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
-			cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
-			cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
-
-			Ptr<DetectionBasedTracker::IDetector> DetecteurStop = makePtr<ObjectScanner>(cascadeStop);
-			Ptr<DetectionBasedTracker::IDetector> DetecteurFeuxRouge = makePtr<ObjectScanner>(cascadeFeuxRouge);
-			Ptr<DetectionBasedTracker::IDetector> DetecteurVirageDroite = makePtr<ObjectScanner>(cascadeVirageDroite);
-			DetectionBasedTracker::Parameters params;
-			DetectionBasedTracker DetectorStop(detectStop, DetecteurStop, params);
-			DetectionBasedTracker DetectorFeuxRouge(detectFeuxRouge, DetecteurFeuxRouge, params);
-			DetectionBasedTracker DetectorVirageDroite(detectVirageDroite, DetecteurVirageDroite, params);
-
-			Mat RFrame; 
-			Mat WFrame;
-			
-				while (waitKey(30) < 0)
-				 {
-					VideoStream >> RFrame;
-					cvtColor(RFrame, WFrame, COLOR_BGR2GRAY);
-					
-
-					////////////Feu Rouge:
-					//traitement pour feux rouges
-					//GaussianBlur(WFrame, gaussBlur, Size(25, 25), 0);
-					DetectorFeuxRouge.process(WFrame);
-					DetectorFeuxRouge.getObjects(FeuTrafficVec);
-					/////////////////Virags Droite:
-					DetectorVirageDroite.process(WFrame);
-					DetectorVirageDroite.getObjects(VirageDroiteVec);
-					///////////////PanneauStop
-					DetectorStop.process(WFrame);
-					DetectorStop.getObjects(PanneauStopVec);
-
-
-
-					for (size_t i = 0; i < PanneauStopVec.size(); i++)
-					{
-						rectangle(RFrame, PanneauStopVec[i], Scalar(10, 100, 0));
-					}
-					for (size_t i = 0; i < FeuTrafficVec.size(); i++)
-					{
-						rectangle(RFrame, FeuTrafficVec[i], Scalar(50, 400, 10));
-					}
-					imshow(Fenetre, RFrame);
-					
-					for (size_t i = 0; i < VirageDroiteVec.size(); i++)
-					{
-						rectangle(RFrame, VirageDroiteVec[i], Scalar(50, 400, 10));
-					}
-					imshow(Fenetre, RFrame);
-					
-					if (this->PanneauStopVec.size() > 0)
-					{
-
-						 resetDetection();
-
-							 ScannerStatus = 3;
-					}
-					 else if (this->FeuTrafficVec.size() > 0)
-					 {
-
-						 resetDetection();
-
-						 ScannerStatus = 4;
-					 }
-					 else if (this->PanneauStopVec.size() <= 0 && this->FeuTrafficVec.size() <= 0) {
-							resetDetection();
-							ScannerStatus = 1;							
-						 }
-					 if (waitKey(10) == 27)
-					 {
-						 break;
-					 }
-				}
-			
-			
-			resetDetection();
-			DetectorStop.stop();
-			DetectorFeuxRouge.stop();
-
-			
-		}
-		return 0;
-	}
-	
-
-
-	virtual ~ObjectScanner()
-	{}
+	VideoCapture lancerCam();
+	ObjectScanner();
+	ObjectScanner(Ptr<CascadeClassifier> detector);
+	void detect(const Mat &Image, std::vector<Rect> &objects);
+	bool isVideoStreamOpened(VideoCapture VideoStream);
+	void resetDetection();
+	int sceneScan(); 
+	virtual ~ObjectScanner();
 };
+
+VideoCapture ObjectScanner::lancerCam()
+{
+	VideoCapture camTemp; 
+	camTemp.open(this->videoSourceURL); 
+	if (!camTemp.isOpened())
+	{
+		cout << "ERREUR CHARGEMENT FLUX VIDEO" << endl;
+		exit(0);
+	}
+	return camTemp;
+}
+ObjectScanner::ObjectScanner()
+{
+}
+ObjectScanner::ObjectScanner(Ptr<CascadeClassifier> detector) : IDetector(), Detector(detector)
+{
+	CV_Assert(detector);
+}
+void ObjectScanner::detect(const Mat & Image, std::vector<Rect>& objects)
+{
+	//detectMultiScale permet de retourner les objets trouvees sous une liste de rectangles.
+
+	Detector->detectMultiScale(Image, objects, scaleFactor, minNeighbours, 0, minObjSize, maxObjSize);
+
+}
+bool ObjectScanner::isVideoStreamOpened(VideoCapture VideoStream)
+{
+	if (!VideoStream.isOpened())
+	{
+		printf("Erreur Camera\n");
+		return false;
+	}
+	else
+		return true;
+}
+void ObjectScanner::resetDetection()
+{
+	this->PanneauStopVec.clear();
+	this->FeuTrafficVec.clear();
+	this->VirageDroiteVec.clear();
+}
+int ObjectScanner::sceneScan()
+{
+	this->VideoStream = lancerCam();
+	namedWindow("Reconnaissance objets");
+
+
+	if (isVideoStreamOpened(VideoStream)) {
+		//on include le .XML de l'entrainement
+		std::string fichierXmlCascadeStop = samples::findFile(this->ClassifierTrainingStop);
+		std::string fichierXmlCascadeRouge = samples::findFile(this->ClassifierTrainingFeuRouge);
+		std::string fichierXmlVirageDroite = samples::findFile(this->ClassifierTrainingVirageDroite);
+
+		//pointeur sur objet CascadeClassifier :
+		Ptr<CascadeClassifier> cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
+		Ptr<CascadeClassifier> cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
+		Ptr<CascadeClassifier> cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
+
+		Ptr<DetectionBasedTracker::IDetector> detectStop = makePtr<ObjectScanner>(cascadeStop);
+		Ptr<DetectionBasedTracker::IDetector> detectFeuxRouge = makePtr<ObjectScanner>(cascadeFeuxRouge);
+		Ptr<DetectionBasedTracker::IDetector> detectVirageDroite = makePtr<ObjectScanner>(cascadeVirageDroite);
+
+
+		cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
+		cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
+		cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
+
+		Ptr<DetectionBasedTracker::IDetector> DetecteurStop = makePtr<ObjectScanner>(cascadeStop);
+		Ptr<DetectionBasedTracker::IDetector> DetecteurFeuxRouge = makePtr<ObjectScanner>(cascadeFeuxRouge);
+		Ptr<DetectionBasedTracker::IDetector> DetecteurVirageDroite = makePtr<ObjectScanner>(cascadeVirageDroite);
+		DetectionBasedTracker::Parameters params;
+		DetectionBasedTracker DetectorStop(detectStop, DetecteurStop, params);
+		DetectionBasedTracker DetectorFeuxRouge(detectFeuxRouge, DetecteurFeuxRouge, params);
+		DetectionBasedTracker DetectorVirageDroite(detectVirageDroite, DetecteurVirageDroite, params);
+
+		Mat RFrame;
+		Mat WFrame;
+
+		while (waitKey(30) < 0)
+		{
+			VideoStream >> RFrame;
+			cvtColor(RFrame, WFrame, COLOR_BGR2GRAY);
+
+
+			////////////Feu Rouge:
+			//traitement pour feux rouges
+			//GaussianBlur(WFrame, gaussBlur, Size(25, 25), 0);
+			DetectorFeuxRouge.process(WFrame);
+			DetectorFeuxRouge.getObjects(FeuTrafficVec);
+			/////////////////Virags Droite:
+			DetectorVirageDroite.process(WFrame);
+			DetectorVirageDroite.getObjects(VirageDroiteVec);
+			///////////////PanneauStop
+			DetectorStop.process(WFrame);
+			DetectorStop.getObjects(PanneauStopVec);
+
+
+
+			for (size_t i = 0; i < PanneauStopVec.size(); i++)
+			{
+				rectangle(RFrame, PanneauStopVec[i], Scalar(10, 100, 0));
+			}
+			for (size_t i = 0; i < FeuTrafficVec.size(); i++)
+			{
+				rectangle(RFrame, FeuTrafficVec[i], Scalar(50, 400, 10));
+			}
+
+
+			for (size_t i = 0; i < VirageDroiteVec.size(); i++)
+			{
+				rectangle(RFrame, VirageDroiteVec[i], Scalar(50, 400, 10));
+			}
+			imshow("Reconnaissance objets", RFrame);
+
+			if (this->PanneauStopVec.size() > 0)
+			{
+
+				resetDetection();
+
+				ScannerStatus = 3;
+			}
+			else if (this->FeuTrafficVec.size() > 0)
+			{
+
+				resetDetection();
+
+				ScannerStatus = 4;
+			}
+			else if (this->VirageDroiteVec.size() > 0)
+			{
+
+				resetDetection();
+
+				ScannerStatus = 5;
+			}
+			else if (this->PanneauStopVec.size() <= 0 && this->FeuTrafficVec.size() <= 0) {
+				resetDetection();
+				ScannerStatus = 1;
+			}
+			if (waitKey(10) == 27)
+			{
+				break;
+			}
+		}
+
+
+		resetDetection();
+		DetectorStop.stop();
+		DetectorFeuxRouge.stop();
+
+
+	}
+	return 0;
+}
+ObjectScanner::~ObjectScanner()
+{
+}
 
 
 
@@ -394,33 +407,28 @@ Vehicule::Vehicule(CarServerSocket& carSoc, ObjectScanner& objDetection)
 }
 void  Vehicule::forward()
 {
-	this->carSoc->msgEnvoi("1");
+	this->carSoc->msgEnvoi(forwardAction);
 }
 void Vehicule::backward()
 {
-	this->carSoc->msgEnvoi("2");
+	this->carSoc->msgEnvoi(BackwardAction);
 }
 void Vehicule::right()
 {
-	this->carSoc->msgEnvoi("3");
+	this->carSoc->msgEnvoi(rightAction);
 }
 void Vehicule::left()
 {
-	this->carSoc->msgEnvoi("4");
+	this->carSoc->msgEnvoi(leftAction);
 }
 void Vehicule::stop()
 {
 	this->backward(); //pour arreter les roues rapidement
 	Sleep(30);
-	this->carSoc->msgEnvoi("5");
+	this->carSoc->msgEnvoi(stopAction);
 }
 int Vehicule::returnIfObstacle() {
-	//return 1 si obstacle IR, 2 si Sonar, 0 sinon 
 	string s = this->carSoc->msgRecu();
-	//char s_array[DEFAULT_BUFLEN];
-	//char ss_array[9] = "obstacle";
-	//strcpy_s(s_array, s.c_str());	
-
 	string infoRecv = s.substr(s.length()-1, 1);
 	cout << "INFO RECIEVED: " << infoRecv << endl;
 	 if (infoRecv == "1") {
@@ -429,7 +437,6 @@ int Vehicule::returnIfObstacle() {
 	}
 	else return 0;
 }
-
 void Vehicule::stopSignManeuver()
 {
 	Sleep(300);
@@ -442,7 +449,6 @@ void Vehicule::stopSignManeuver()
 
 	Sleep(200);
 }
-
 void Vehicule::redTrafficLightManeuver()
 {
 	this->stop();
@@ -454,39 +460,44 @@ void Vehicule::redTrafficLightManeuver()
 	this->forward();
 	Sleep(50);
 }
-
-
-
 int Vehicule::goSmart()
 {
-	cout << "Preparing components" << endl;
-	Sleep(5000);
+	cout << "Preparing Video.." << endl;
+	Sleep(5000); //On laisse le temps pour l'initialisation video.
+	int status = -2;
+	int isObstacle = 1;
 
 	while (1)
 	{	
-		int isObstacle = returnIfObstacle();
-		int z = -2;
+		 isObstacle = returnIfObstacle();
 	
 		 if (isObstacle != 1)
 		{
 					
-			 if (ScannerStatus == 3 || ScannerStatus == 1 || ScannerStatus == 4) {
-				 z = ScannerStatus;
+			 if (ScannerStatus == NothingDetected 
+				 || ScannerStatus == stopDetected
+				 || ScannerStatus == trafficLightsDetected 
+				 || ScannerStatus == turnRightDetected
+				 || ScannerStatus == turnLeftDetected
+				 ) 
+			 {
+				 status = ScannerStatus;
 			 }
 			
-				switch (z)
+				switch (status)
 				{
-					case 1: this->forward(); cout << "RAS" << endl; break;
-					case 3:  cout << "STOP DETECTEE" << endl; this->stopSignManeuver(); break;
-					case 4:  cout << "FEU DETECTEE" << endl; this->redTrafficLightManeuver(); break;
-					case 5: this->stop(); cout << "TOURNER A GAUCHE" << endl; break;
-					default: this->stop(); break;
+				case NothingDetected:  cout << "RAS" << endl; this->forward();; break;
+				case stopDetected:  cout << "STOP DETECTEE" << endl; this->stopSignManeuver(); break;
+				case trafficLightsDetected:  cout << "FEU DETECTEE" << endl; this->redTrafficLightManeuver(); break;
+				case turnRightDetected:  cout << "TOURNER A DROITE" << endl; this->stop(); break;
+				case turnLeftDetected:  cout << "TOURNER A GAUCHE" << endl; this->stop(); break;
+				
+				default: this->stop(); break;
 				}
 			
-		 }
-		 else {
-			 this->backward();
-			 Sleep(2000);
+		 }else {
+			 this->stop();
+			 cout << "Obstacle Detectee" << endl;
 		 }
 		
 	}
@@ -512,15 +523,7 @@ int main() {
 	v.join();
 	t.join();
 	
-	
-	
-	//v1.goSmart();
-	
-
-	//on crée la detection de mouvement
-	
-	
-
+	// semaphore 
 	return 0;
 }
 
@@ -606,3 +609,4 @@ int main(void)
 	return 0;
 }
 */
+
