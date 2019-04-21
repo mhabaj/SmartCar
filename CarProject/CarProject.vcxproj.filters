@@ -36,14 +36,25 @@
     <ClCompile Include="CarProject.cpp">
       <Filter>Fichiers sources\PC</Filter>
     </ClCompile>
-    <ClCompile Include="SocketServ.cpp">
-      <Filter>Fichiers sources\PC</Filter>
-    </ClCompile>
     <ClCompile Include="mainClient.cpp">
       <Filter>Fichiers sources\Raspberry</Filter>
     </ClCompile>
     <ClCompile Include="OralDetectionRap.cpp">
       <Filter>Fichiers sources\PC</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CarServerSocket.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectScanner.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Vehicule.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

@@ -1,11 +1,11 @@
 
-
+/*
 // Commandes compilation:
 //gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread    ---> IR Sensor
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
 //gcc main.cpp - o mainExec - L / usr / local / lib - lwiringPi - lpthread  ---> MotorAction
 //COMPILER  MAINCLIENT: g++ main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread
-/*
+
 
 //////////////////////Debut programme:///////////////
 #include <stdio.h>
@@ -133,8 +133,8 @@ public:
 		switch (n) {
 		case 1: Motor::motorForward();  break;
 		case 2: Motor::motorBackward(); break;
-		case 4: Motor::motorLeftForward(); break;
 		case 3: Motor::motorRightForward(); break;
+		case 4: Motor::motorLeftForward(); break;
 		case 5: Motor::motorStop(); break;
 		default: Motor::motorStop(); cout << "Commande deplacement invalide" << endl; break;
 

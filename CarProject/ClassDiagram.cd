@@ -1,2 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ClassDiagram /> 
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CarServerSocket">
+    <Position X="4.5" Y="0.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>ABAQAAAAEAACIAgEBACGACAAAAAACAAAAAAgABAEAgA=</HashCode>
+      <FileName>CarServerSocket.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ObjectScanner">
+    <Position X="8.5" Y="0.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>IGAAAAggAAAIAAAAAAACKAAAAAAAAACAAICACAEgAAg=</HashCode>
+      <FileName>ObjectScanner.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vehicule">
+    <Position X="0.5" Y="0.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgIAAAAAgAIAAAAgAQBAAAAoEAAAABACBAAAgAA=</HashCode>
+      <FileName>Vehicule.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
