@@ -295,7 +295,7 @@ void Vehicule::stopSignManeuver()
 	}
 	this->forward();
 
-	Sleep(200);
+	Sleep(2000);
 }
 void Vehicule::redTrafficLightManeuver()
 {

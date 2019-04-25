@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Motor">
+    <Position X="3.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAKAAAAAAAAAAAACAAAAAAQAACAAAAAACAAAAAEAY=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CarClientSocket">
+    <Position X="3.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAABAAAAAAAIAAAAAKgQAAAEAAAAAAAAQwAAAAAAAg=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IRSensor">
+    <Position X="5.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAABAAEIAAAIAAAAAAIAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="SocketIR" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Sonar">
+    <Position X="1.5" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAATAAAAAEEAAAIAIIACAAKCAAA=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vehicule">
+    <Position X="10" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgIAAAAAgAIAAAAgAQBAAAAoEAAAABACBAAAgAA=</HashCode>
+      <FileName>Vehicule.hpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="carSoc" />
+      <Field Name="objDetection" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="CarServerSocket" Collapsed="true">
+    <Position X="13.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAQAAAAEAACIAgEBACGACAAAAAACAAAAAAgABAEAgA=</HashCode>
+      <FileName>CarServerSocket.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ObjectScanner" Collapsed="true">
+    <Position X="12" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IGAAAAggAAAIAAAAAAACKAAAAAAAAACAAICACAEgAAg=</HashCode>
+      <FileName>ObjectScanner.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

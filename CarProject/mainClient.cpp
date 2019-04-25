@@ -1,5 +1,5 @@
 
-/*
+
 // Commandes compilation:
 //gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread    ---> IR Sensor
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
@@ -34,140 +34,154 @@ const char hostname[] = "192.168.43.244";
 
 
 class Motor {
-
 	//Parametres Wiring Pi moteurs:
 #define motorPin1	5	//forward
 #define motorPin2	6	//backward
 #define leftPin	12	//gauche
 #define rightPin 13	//droite
 public:
-
-	static void motorStop() {
-		digitalWrite(motorPin1, LOW);
-		digitalWrite(motorPin2, LOW);
-		digitalWrite(leftPin, LOW);
-		digitalWrite(rightPin, LOW);
-
-
-		printf("Stop...\n");
-	}
-
-	static void CleanGPIO(int signum) {
-		motorStop();
-		cout << "Arret en cours" << endl;
-
-		pinMode(motorPin1, INPUT);
-		pinMode(motorPin2, INPUT);
-		pinMode(leftPin, INPUT);
-		pinMode(rightPin, INPUT);
-		sleep(2);
-		cout << "nettoyage reussi \n" << endl;
-		exit(signum);
-	}
-
-	static void resetGPIO() {
-		pinMode(motorPin1, INPUT);
-		pinMode(motorPin2, INPUT);
-		pinMode(leftPin, INPUT);
-		pinMode(rightPin, INPUT);
-		cout << "Reset reussi" << endl;
-
-	}
-
-	static void motorForward() {
-		digitalWrite(motorPin2, LOW);
-		digitalWrite(leftPin, LOW);
-		digitalWrite(rightPin, LOW);
-		digitalWrite(motorPin1, HIGH);
-
-		printf("Forward...\n");
-	}
-	static void motorBackward() {
-		digitalWrite(motorPin1, LOW);
-		digitalWrite(leftPin, LOW);
-		digitalWrite(rightPin, LOW);
-		digitalWrite(motorPin2, HIGH);
-
-		printf("Backward...\n");
-
-	}
-
-	static void motorRightForward() {
-		digitalWrite(leftPin, LOW);
-		digitalWrite(motorPin2, LOW);
-		digitalWrite(rightPin, HIGH);
-		this_thread::sleep_for(chrono::milliseconds(500));
-		digitalWrite(motorPin1, HIGH);
-
-
-		printf("RightForward...\n");
-	}
-	static void motorLeftForward() {
-		digitalWrite(rightPin, LOW);
-		digitalWrite(motorPin2, LOW);
-		digitalWrite(leftPin, HIGH);
-		this_thread::sleep_for(chrono::milliseconds(500));
-		digitalWrite(motorPin1, HIGH);
-
-		printf("LEFTForward...\n");
-	}
-	static int motorInitialisation() {
-
-		if (wiringPiSetupGpio() == -1) { //when initialize wiring failed,print messageto screen
-			printf("setup wiringPi failed !");
-			return -1;
-		}
-
-		signal(SIGINT, CleanGPIO);
-		resetGPIO();
-		pinMode(motorPin1, OUTPUT);//set mode for the pin
-		pinMode(motorPin2, OUTPUT);
-		pinMode(leftPin, OUTPUT);
-		pinMode(rightPin, OUTPUT);
-		return 1;
-	}
-
-	static void TakeAction(string action) {
-		int n = std::stoi(action);
-		cout << "ACTION RECUUUUUUUUUUUUUUUUUU" << n << endl;
-		switch (n) {
-		case 1: Motor::motorForward();  break;
-		case 2: Motor::motorBackward(); break;
-		case 3: Motor::motorRightForward(); break;
-		case 4: Motor::motorLeftForward(); break;
-		case 5: Motor::motorStop(); break;
-		default: Motor::motorStop(); cout << "Commande deplacement invalide" << endl; break;
-
-
-		}
-		///////OU BIEN///////
-		if (n == 1) {
-			Motor::motorForward();
-
-		}
-		else if (n == 2) {
-			Motor::motorBackward();
-
-		}
-		else if (n == 3) {
-			Motor::motorRightForward();
-
-		}
-		else if (n == 4) {
-			Motor::motorLeftForward();
-
-		}
-		else if (n == 5) {
-			Motor::motorStop();
-
-		}
-		else {
-			Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
-		}
-
-	}
-
+	static void motorStop();
+	static void CleanGPIO(int signum);
+	static void resetGPIO();
+	static void motorForward();
+	static void motorBackward();
+	static void motorRightForward();
+	static void motorLeftForward();
+	static int motorInitialisation();
+	static void TakeAction(string action);
 };
+void Motor::motorStop()
+{
+
+	digitalWrite(motorPin1, LOW);
+	digitalWrite(motorPin2, LOW);
+	digitalWrite(leftPin, LOW);
+	digitalWrite(rightPin, LOW);
+
+
+	printf("Stop...\n");
+}
+void Motor::CleanGPIO(int signum)
+{
+	motorStop();
+	cout << "Arret en cours" << endl;
+
+	pinMode(motorPin1, INPUT);
+	pinMode(motorPin2, INPUT);
+	pinMode(leftPin, INPUT);
+	pinMode(rightPin, INPUT);
+	sleep(2);
+	cout << "nettoyage reussi \n" << endl;
+	exit(signum);
+}
+void Motor::resetGPIO()
+{
+	pinMode(motorPin1, INPUT);
+	pinMode(motorPin2, INPUT);
+	pinMode(leftPin, INPUT);
+	pinMode(rightPin, INPUT);
+	cout << "Reset reussi" << endl;
+}
+void Motor::motorForward()
+{
+	digitalWrite(motorPin2, LOW);
+	digitalWrite(leftPin, LOW);
+	digitalWrite(rightPin, LOW);
+	digitalWrite(motorPin1, HIGH);
+
+	printf("Forward...\n");
+}
+void Motor::motorBackward()
+{
+	digitalWrite(motorPin1, LOW);
+	digitalWrite(leftPin, LOW);
+	digitalWrite(rightPin, LOW);
+	digitalWrite(motorPin2, HIGH);
+
+	printf("Backward...\n");
+}
+void Motor::motorRightForward()
+{
+	digitalWrite(leftPin, LOW);
+	digitalWrite(motorPin2, LOW);
+	digitalWrite(rightPin, HIGH);
+	this_thread::sleep_for(chrono::milliseconds(500));
+	digitalWrite(motorPin1, HIGH);
+
+
+	printf("RightForward...\n");
+}
+void Motor::motorLeftForward()
+{
+
+	digitalWrite(rightPin, LOW);
+	digitalWrite(motorPin2, LOW);
+	digitalWrite(leftPin, HIGH);
+	this_thread::sleep_for(chrono::milliseconds(500));
+	digitalWrite(motorPin1, HIGH);
+
+	printf("LEFTForward...\n");
+}
+int Motor::motorInitialisation()
+{
+	if (wiringPiSetupGpio() == -1) { //when initialize wiring failed,print messageto screen
+		printf("setup wiringPi failed !");
+		return -1;
+	}
+
+	signal(SIGINT, CleanGPIO);
+	resetGPIO();
+	pinMode(motorPin1, OUTPUT);//set mode for the pin
+	pinMode(motorPin2, OUTPUT);
+	pinMode(leftPin, OUTPUT);
+	pinMode(rightPin, OUTPUT);
+	return 1;
+}
+void Motor::TakeAction(string action)
+{
+	int n = std::stoi(action);
+	cout << "ACTION RECUUUUUUUUUUUUUUUUUU" << n << endl;
+	switch (n) {
+	case 1: Motor::motorForward();  break;
+	case 2: Motor::motorBackward(); break;
+	case 3: Motor::motorRightForward(); break;
+	case 4: Motor::motorLeftForward(); break;
+	case 5: Motor::motorStop(); break;
+	default: Motor::motorStop(); cout << "Commande deplacement invalide" << endl; break;
+
+
+	}
+	///////OU BIEN///////
+	if (n == 1) {
+		Motor::motorForward();
+
+	}
+	else if (n == 2) {
+		Motor::motorBackward();
+
+	}
+	else if (n == 3) {
+		Motor::motorRightForward();
+
+	}
+	else if (n == 4) {
+		Motor::motorLeftForward();
+
+	}
+	else if (n == 5) {
+		Motor::motorStop();
+
+	}
+	else {
+		Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
+	}
+}
+
+
+
+
+
+
 
 
 
@@ -183,127 +197,147 @@ private:
 	int portnum;
 
 public:
-	CarClientSocket(int portnum) {
-		this->portnum = portnum;
+	CarClientSocket(int portnum);
+	bool initSoc();
 
-	}
-	bool initSoc() {
+	void msgEnvoie(string s);
 
-
-		if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-			perror("Erreur socket");
-			this->isConnected = false;
-			exit(0);
-		}
-		else
-			printf("socket = %d connexion possible sur le port %d\n", sd, portnum);
-
-
-		if ((host = gethostbyname(hostname)) == NULL) {
-			herror("gethostbyname");
-			this->isConnected = false;
-			exit(-1);
-		}
-
-		bcopy(host->h_addr, (char *)&addrsrv.sin_addr, host->h_length);
-		addrsrv.sin_family = AF_INET;
-		addrsrv.sin_port = htons(portnum);
-
-		connect(sd, (const struct sockaddr*)&addrsrv, sizeof(addrsrv));
-		this->isConnected = true;
-		return true;
-
-	}
-
-	void msgEnvoie(string s) {
-		strcpy(this->msg, s.c_str());
-		if ((ret = send(sd, msg, s.length(), 0)) == -1) {
-			perror("Erreur sendto");
-		}
-		else {
-			printf("sendto = %d; msg = %s\n", ret, msg);
-			this_thread::sleep_for(chrono::milliseconds(10));
-
-		}
-	}
-
-	string msgRecv() {
-		string msgRecu = "";
-		if ((ret = recv(sd, msg, sizeof(msg), 0)) == -1) {
-			perror("Erreur recvfrom");
-		}
-		if (this->ret > 0) {
-
-			for (int i = 0; i < this->ret; i++) {
-				msgRecu += this->msg[i];
-			}
-			return msgRecu;
-
-		}
-		else if (ret == 0) printf("femerutre de la connexion.....\n");
-
-		else {
-			printf(" Communication avec serveur interrompu \n");
-			shutdown(sd, SHUT_RDWR);
-			close(sd);
-			Motor::CleanGPIO(0);
-
-		}
-		exit(1);
-
-	}
-	bool retIsConnected() {
-		return this->isConnected;
-	}
+	string msgRecv();
+	bool retIsConnected();
 };
+CarClientSocket::CarClientSocket(int portnum){
+	this->portnum = portnum;
+
+
+}
+bool CarClientSocket::initSoc()
+{
+	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+		perror("Erreur socket");
+		this->isConnected = false;
+		exit(0);
+	}
+	else
+		printf("socket = %d connexion possible sur le port %d\n", sd, portnum);
+
+
+	if ((host = gethostbyname(hostname)) == NULL) {
+		herror("gethostbyname");
+		this->isConnected = false;
+		exit(-1);
+	}
+
+	bcopy(host->h_addr, (char *)&addrsrv.sin_addr, host->h_length);
+	addrsrv.sin_family = AF_INET;
+	addrsrv.sin_port = htons(portnum);
+
+	connect(sd, (const struct sockaddr*)&addrsrv, sizeof(addrsrv));
+	this->isConnected = true;
+	return true;
+}
+void CarClientSocket::msgEnvoie(string s)
+{
+	strcpy(this->msg, s.c_str());
+	if ((ret = send(sd, msg, s.length(), 0)) == -1) {
+		perror("Erreur sendto");
+	}
+	else {
+		printf("sendto = %d; msg = %s\n", ret, msg);
+		this_thread::sleep_for(chrono::milliseconds(10));
+
+	}
+}
+string CarClientSocket::msgRecv()
+{
+	string msgRecu = "";
+	if ((ret = recv(sd, msg, sizeof(msg), 0)) == -1) {
+		perror("Erreur recvfrom");
+	}
+	if (this->ret > 0) {
+
+		for (int i = 0; i < this->ret; i++) {
+			msgRecu += this->msg[i];
+		}
+		return msgRecu;
+
+	}
+	else if (ret == 0) printf("femerutre de la connexion.....\n");
+
+	else {
+		printf(" Communication avec serveur interrompu \n");
+		shutdown(sd, SHUT_RDWR);
+		close(sd);
+		Motor::CleanGPIO(0);
+
+	}
+	exit(1);
+}
+bool CarClientSocket::retIsConnected()
+{
+	return this->isConnected;
+}
+
+
+
+
+
+
+
+
 
 class IRSensor {
 private:
-
 	int irReception = 4;  //12 cm
 	CarClientSocket* SocketIR;
-
-
 public:
-	IRSensor(CarClientSocket& SocketIR) {
+	IRSensor(CarClientSocket& SocketIR);
+	int irSetup();
+	int isObstacle();
+	void sendIRSensorData(int irData);
+};
+IRSensor::IRSensor(CarClientSocket& SocketIR) {
 
-		this->SocketIR = &SocketIR;
+	this->SocketIR = &SocketIR;
 
+}
+int IRSensor::irSetup()
+{
+	if (wiringPiSetupGpio() == -1) {
+		printf("Erreur WIring Pi IRSensor!\n");
+		return 1;
 	}
-	int irSetup() {
-		if (wiringPiSetupGpio() == -1) {
-			printf("Erreur WIring Pi IRSensor!\n");
+
+	pinMode(irReception, INPUT);
+}
+int IRSensor::isObstacle() {
+	delay(35);
+
+	if (digitalRead(irReception) == 0) {
+		delay(25);
+		if (digitalRead(irReception) == 0) {
+			printf("Detected Barrier !\n");
 			return 1;
 		}
-
-		pinMode(irReception, INPUT);
-	}
-
-	int isObstacle() {
-		delay(35);
-
-		if (digitalRead(irReception) == 0) {
-			delay(25);
-			if (digitalRead(irReception) == 0) {
-				printf("Detected Barrier !\n");
-				return 1;
-			}
-			else {
-				return 0;
-			}
+		else {
+			return 0;
 		}
 	}
+}
+void IRSensor::sendIRSensorData(int irData) {
 
-	void sendIRSensorData(int irData) {
+
+	SocketIR->msgEnvoie(to_string(irData));
+
+}
 
 
-		SocketIR->msgEnvoie(to_string(irData));
 
-	}
-};
+
+
+
+
 
 class Sonar {
-
 private:
 	const int puceEnvoie = 23;
 	const int puceReception = 24;
@@ -312,95 +346,86 @@ private:
 	long pingTime;
 	float distance;
 	CarClientSocket* SocketSonar;
-
-
-
 public:
-	Sonar(CarClientSocket& SocketSonar) {
-		this->SocketSonar = &SocketSonar;
-	}
-
-
-
-	int pulseIn(int pin, int level, int timeout)
-	{
-		struct timeval tn, t0, t1;
-		long micros;
-		gettimeofday(&t0, NULL);
-		micros = 0;
-		while (digitalRead(pin) != level)
-		{
-			gettimeofday(&tn, NULL);
-			if (tn.tv_sec > t0.tv_sec) micros = 1000000L; else micros = 0;
-			micros += (tn.tv_usec - t0.tv_usec);
-			if (micros > timeout) return 0;
-		}
-		gettimeofday(&t1, NULL);
-		while (digitalRead(pin) == level)
-		{
-			gettimeofday(&tn, NULL);
-			if (tn.tv_sec > t0.tv_sec) micros = 1000000L; else micros = 0;
-			micros = micros + (tn.tv_usec - t0.tv_usec);
-			if (micros > timeout) return 0;
-		}
-		if (tn.tv_sec > t1.tv_sec) micros = 1000000L; else micros = 0;
-		micros = micros + (tn.tv_usec - t1.tv_usec);
-		return micros;
-	}
-
-	double getSonar() {
-		delay(35);
-
-		digitalWrite(this->puceEnvoie, HIGH);
-		delayMicroseconds(35);
-		digitalWrite(this->puceEnvoie, LOW);
-		pingTime = pulseIn(this->puceReception, HIGH, this->timeOut);
-		if (this->pingTime <= 1) {
-			return -1.0; //trop proche ou trop loin
-		}
-		else {
-			distance = pingTime * 340.0 / 2.0 / 10000.0;
-			return distance;
-		}
-
-	}
-
-	int setupSonar() {
-
-		if (wiringPiSetupGpio() == -1) {
-
-			("Erreur wiringPi Setup !");
-			return 1;
-		}
-		pinMode(puceEnvoie, OUTPUT);
-		pinMode(puceReception, INPUT);
-
-
-	}
-
-	int retSonarData() {
-		double sonarvalue = getSonar();
-		if (sonarvalue <= 40 && sonarvalue > -1) {
-			return 1;
-			//SocketSonar->msgEnvoie("1");
-		}
-		else {
-			return 0;
-
-			//SocketSonar->msgEnvoie("0");
-		}
-
-
-	}
-
-	void sendSonarData(int SonarData) {
-		SocketSonar->msgEnvoie(to_string(SonarData));
-
-
-	}
-
-
+	Sonar(CarClientSocket& SocketSonar);
+	int pulseIn(int pin, int level, int timeout);
+	double getSonar();
+	int setupSonar();
+	int retSonarData();
+	void sendSonarData(int SonarData);
 };
+Sonar::Sonar(CarClientSocket& SocketSonar) {
+	this->SocketSonar = &SocketSonar;
+}
+int Sonar::pulseIn(int pin, int level, int timeout)
+{
+	struct timeval tn, t0, t1;
+	long micros;
+	gettimeofday(&t0, NULL);
+	micros = 0;
+	while (digitalRead(pin) != level)
+	{
+		gettimeofday(&tn, NULL);
+		if (tn.tv_sec > t0.tv_sec) micros = 1000000L; else micros = 0;
+		micros += (tn.tv_usec - t0.tv_usec);
+		if (micros > timeout) return 0;
+	}
+	gettimeofday(&t1, NULL);
+	while (digitalRead(pin) == level)
+	{
+		gettimeofday(&tn, NULL);
+		if (tn.tv_sec > t0.tv_sec) micros = 1000000L; else micros = 0;
+		micros = micros + (tn.tv_usec - t0.tv_usec);
+		if (micros > timeout) return 0;
+	}
+	if (tn.tv_sec > t1.tv_sec) micros = 1000000L; else micros = 0;
+	micros = micros + (tn.tv_usec - t1.tv_usec);
+	return micros;
+}
+double Sonar::getSonar()
+{
+	delay(35);
+
+	digitalWrite(this->puceEnvoie, HIGH);
+	delayMicroseconds(35);
+	digitalWrite(this->puceEnvoie, LOW);
+	pingTime = pulseIn(this->puceReception, HIGH, this->timeOut);
+	if (this->pingTime <= 1) {
+		return -1.0; //trop proche ou trop loin
+	}
+	else {
+		distance = pingTime * 340.0 / 2.0 / 10000.0;
+		return distance;
+	}
+}
+int Sonar::setupSonar()
+{
+	if (wiringPiSetupGpio() == -1) {
+
+		("Erreur wiringPi Setup !");
+		return 1;
+	}
+	pinMode(puceEnvoie, OUTPUT);
+	pinMode(puceReception, INPUT);
+}
+int Sonar::retSonarData()
+{
+	double sonarvalue = getSonar();
+	if (sonarvalue <= 40 && sonarvalue > -1) {
+		return 1;
+		//SocketSonar->msgEnvoie("1");
+	}
+	else {
+		return 0;
+
+		//SocketSonar->msgEnvoie("0");
+	}
+}
+void Sonar::sendSonarData(int SonarData)
+{
+	SocketSonar->msgEnvoie(to_string(SonarData));
+
+}
 
 
 
@@ -409,27 +434,19 @@ public:
 
 
 class Vehicule {
-
 private:
-
 	CarClientSocket* socketIO;
 	IRSensor* irSensor;
 	Sonar* sonar;
 	bool status;
-
-
 public:
-
 	Vehicule(CarClientSocket& socketIO,
 		IRSensor& irSensor, Sonar& sonar);
-
 	int prepareComponents();
 	void startup();
-
 	void doMovements();
 	bool sendInfo();
 	~Vehicule();
-
 };
 bool Vehicule::sendInfo() {
 	int isObstacleReact = irSensor->isObstacle();
@@ -437,7 +454,6 @@ bool Vehicule::sendInfo() {
 	if (isObstacleReact == 1) {
 		irSensor->sendIRSensorData(1);
 		return true;
-
 	}
 	else if (isSonarReact == 1) {
 		sonar->sendSonarData(1);
@@ -466,7 +482,6 @@ void Vehicule::doMovements() {
 	Motor::TakeAction(action);
 
 }
-
 void Vehicule::startup() {
 
 	if (this->prepareComponents() == 1) {
@@ -480,7 +495,6 @@ void Vehicule::startup() {
 		exit(0);
 	}
 }
-
 int Vehicule::prepareComponents() {
 	cout << "preparing Components.. " << endl;
 
@@ -507,6 +521,9 @@ Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sona
 	this->sonar = &sonar;
 
 }
+
+
+
 
 
 int main(void) {
@@ -617,5 +634,4 @@ int main(void) {
 	return 0;
 }
 */
-
 
