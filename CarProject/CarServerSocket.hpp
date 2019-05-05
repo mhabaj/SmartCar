@@ -1,6 +1,6 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
-#define DEFAULT_BUFLEN 56
+#define DEFAULT_BUFLEN 6
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <string>

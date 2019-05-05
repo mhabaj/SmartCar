@@ -1,4 +1,5 @@
-﻿#define DEFAULT_BUFLEN 56
+﻿
+#define DEFAULT_BUFLEN 6
 
 
 #include "Vehicule.hpp"
@@ -19,6 +20,8 @@ using namespace std;
 using namespace cv;
 
 
+static int ScannerStatus = -1;
+////////////////////////////
 const int NothingDetected = 1;
 const int stopDetected = 3;
 const int trafficLightsDetected = 4;
@@ -31,7 +34,6 @@ const string rightAction = "3";
 const string leftAction = "4";
 const string stopAction = "5";
 
-static int ScannerStatus = -1; 
 
 
 //Sockets:
@@ -74,9 +76,20 @@ void CarServerSocket::msgEnvoi(string msgEnvoie) {
 	strcpy_s(this->sendBuffer, msgEnvoie.c_str());
 	// on Envoie le message
 	iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
-	this_thread::sleep_for(chrono::milliseconds(35));
+	//this_thread::sleep_for(chrono::milliseconds(10));
 	//closesocket(ClientSocket);
 }
+
+
+
+
+
+
+
+
+
+
+
 
 //Analyse video:
 VideoCapture ObjectScanner::lancerCam()
@@ -93,12 +106,12 @@ VideoCapture ObjectScanner::lancerCam()
 ObjectScanner::ObjectScanner()
 {
 }
+
+
+
 void ObjectScanner::detect(const Mat & Image, std::vector<Rect>& objects)
 {
-	//detectMultiScale permet de retourner les objets trouvees sous une liste de rectangles.
-
 	Detector->detectMultiScale(Image, objects, scaleFactor, minNeighbours, 0, minObjSize, maxObjSize);
-
 }
 bool ObjectScanner::isVideoStreamOpened(VideoCapture VideoStream)
 {
@@ -124,20 +137,22 @@ int ObjectScanner::sceneScan()
 
 	if (isVideoStreamOpened(VideoStream)) {
 
-		std::string fichierXmlCascadeStop = samples::findFile(this->ClassifierTrainingStop);
-		std::string fichierXmlCascadeRouge = samples::findFile(this->ClassifierTrainingFeuRouge);
-		std::string fichierXmlVirageDroite = samples::findFile(this->ClassifierTrainingVirageDroite);
-		std::string fichierXmlVirageGauche = samples::findFile(this->ClassifierTrainingVirageGauche);
+		string fichierXmlCascadeStop = samples::findFile(this->ClassifierTrainingStop);
+		string fichierXmlCascadeRouge = samples::findFile(this->ClassifierTrainingFeuRouge);
+		string fichierXmlVirageDroite = samples::findFile(this->ClassifierTrainingVirageDroite);
+		string fichierXmlVirageGauche = samples::findFile(this->ClassifierTrainingVirageGauche);
 
-		Ptr<CascadeClassifier> cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
-		Ptr<CascadeClassifier> cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
-		Ptr<CascadeClassifier> cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
-		Ptr<CascadeClassifier> cascadeVirageGauche = makePtr<CascadeClassifier>(fichierXmlVirageGauche);
 
-		Ptr<DetectionBasedTracker::IDetector> detectStop = makePtr<ObjectScanner>(cascadeStop);
-		Ptr<DetectionBasedTracker::IDetector> detectFeuxRouge = makePtr<ObjectScanner>(cascadeFeuxRouge);
-		Ptr<DetectionBasedTracker::IDetector> detectVirageDroite = makePtr<ObjectScanner>(cascadeVirageDroite);
-		Ptr<DetectionBasedTracker::IDetector> detectVirageGauche = makePtr<ObjectScanner>(cascadeVirageGauche);
+
+		 cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
+		 cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
+		 cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
+		 cascadeVirageGauche = makePtr<CascadeClassifier>(fichierXmlVirageGauche);
+
+		 Ptr<DetectionBasedTracker::IDetector> detectStopPrincipale = makePtr<ObjectScanner>(cascadeStop);
+		 Ptr<DetectionBasedTracker::IDetector> detectFeuxRougePrincipale = makePtr<ObjectScanner>(cascadeFeuxRouge);
+		 Ptr<DetectionBasedTracker::IDetector> detectVirageDroitePrincipale = makePtr<ObjectScanner>(cascadeVirageDroite);
+		 Ptr<DetectionBasedTracker::IDetector> detectVirageGauchePrincipale = makePtr<ObjectScanner>(cascadeVirageGauche);
 
 
 		cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
@@ -145,83 +160,83 @@ int ObjectScanner::sceneScan()
 		cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
 		cascadeVirageGauche = makePtr<CascadeClassifier>(fichierXmlVirageGauche);
 
-		Ptr<DetectionBasedTracker::IDetector> DetecteurStop = makePtr<ObjectScanner>(cascadeStop);
-		Ptr<DetectionBasedTracker::IDetector> DetecteurFeuxRouge = makePtr<ObjectScanner>(cascadeFeuxRouge);
-		Ptr<DetectionBasedTracker::IDetector> DetecteurVirageDroite = makePtr<ObjectScanner>(cascadeVirageDroite);
-		Ptr<DetectionBasedTracker::IDetector> DetecteurVirageGauche = makePtr<ObjectScanner>(cascadeVirageGauche);
+		Ptr<DetectionBasedTracker::IDetector> DetecteurStopTrack = makePtr<ObjectScanner>(cascadeStop);
+		Ptr<DetectionBasedTracker::IDetector> DetecteurFeuxRougeTrack = makePtr<ObjectScanner>(cascadeFeuxRouge);
+		Ptr<DetectionBasedTracker::IDetector> DetecteurVirageDroiteTrack = makePtr<ObjectScanner>(cascadeVirageDroite);
+		Ptr<DetectionBasedTracker::IDetector> DetecteurVirageGaucheTrack = makePtr<ObjectScanner>(cascadeVirageGauche);
 		
 		DetectionBasedTracker::Parameters params;
 		
-		DetectionBasedTracker DetectorStop(detectStop, DetecteurStop, params);
-		DetectionBasedTracker DetectorFeuxRouge(detectFeuxRouge, DetecteurFeuxRouge, params);
-		DetectionBasedTracker DetectorVirageDroite(detectVirageDroite, DetecteurVirageDroite, params);
-		DetectionBasedTracker DetectorVirageGauche(detectVirageGauche, DetecteurVirageGauche, params);
+		DetectionBasedTracker DetectorStop(detectStopPrincipale, DetecteurStopTrack, params);
+		DetectionBasedTracker DetectorFeuxRouge(detectFeuxRougePrincipale, DetecteurFeuxRougeTrack, params);
+		DetectionBasedTracker DetectorVirageDroite(detectVirageDroitePrincipale, DetecteurVirageDroiteTrack, params);
+		DetectionBasedTracker DetectorVirageGauche(detectVirageGauchePrincipale, DetecteurVirageGaucheTrack, params);
 
-		Mat RFrame;
-		Mat WFrame;
+		Mat FrameInitiale;
+		Mat FrameModifiee;
 
 		while (waitKey(30) < 0)
 		{
-			VideoStream >> RFrame;
-			cvtColor(RFrame, WFrame, COLOR_BGR2GRAY);
+			VideoStream >> FrameInitiale;
+			cvtColor(FrameInitiale, FrameModifiee, COLOR_BGR2GRAY);
 			////////////Feu Rouge:
-			DetectorFeuxRouge.process(WFrame);
+			DetectorFeuxRouge.process(FrameModifiee);
 			DetectorFeuxRouge.getObjects(FeuTrafficVec);
 			/////////////////Virags Droite:
-			DetectorVirageDroite.process(WFrame);
+			DetectorVirageDroite.process(FrameModifiee);
 			DetectorVirageDroite.getObjects(VirageDroiteVec);
 			///////////////Virages Gauche:
-			DetectorVirageGauche.process(WFrame);
+			DetectorVirageGauche.process(FrameModifiee);
 			DetectorVirageGauche.getObjects(VirageGaucheVec);
 			///////////////PanneauStop:
-			DetectorStop.process(WFrame);
+			DetectorStop.process(FrameModifiee);
 			DetectorStop.getObjects(PanneauStopVec);
 
 
 
 			for (size_t i = 0; i < PanneauStopVec.size(); i++)
 			{
-				rectangle(RFrame, PanneauStopVec[i], Scalar(10, 100, 0));
+				rectangle(FrameInitiale, PanneauStopVec[i], Scalar(10, 100, 0));
 			}
 			for (size_t i = 0; i < FeuTrafficVec.size(); i++)
 			{
-				rectangle(RFrame, FeuTrafficVec[i], Scalar(50, 400, 10));
+				rectangle(FrameInitiale, FeuTrafficVec[i], Scalar(50, 400, 10));
 			}
 			for (size_t i = 0; i < VirageDroiteVec.size(); i++)
 			{
-				rectangle(RFrame, VirageDroiteVec[i], Scalar(50, 400, 10));
+				rectangle(FrameInitiale, VirageDroiteVec[i], Scalar(50, 400, 10));
 			}
 			for (size_t i = 0; i < VirageGaucheVec.size(); i++)
 			{
-				rectangle(RFrame, VirageGaucheVec[i], Scalar(50, 400, 10));
+				rectangle(FrameInitiale, VirageGaucheVec[i], Scalar(50, 400, 10));
 			}
-			imshow("Reconnaissance objets", RFrame);
+			imshow("Reconnaissance objets", FrameInitiale);
 
 			if (this->PanneauStopVec.size() > 0)
 			{
 
 				resetDetection();
-
+				//cout << "\033[1;31m \n------------\STOP DETECTE\n---------- \033[0m\n" << endl;
 				ScannerStatus = stopDetected;
 			}
 			else if (this->FeuTrafficVec.size() > 0)
 			{
 
 				resetDetection();
-
+				//cout << "\033[1;31m \n------------\TRAFFIC LIGHT DETECTE\n---------- \033[0m\n" << endl;
 				ScannerStatus = trafficLightsDetected;
 			}
 			else if (this->VirageDroiteVec.size() > 0)
 			{
 
 				resetDetection();
-
+				//cout << "\033[1;31m \n------------\VIRAGE DROIT DETECTE\n---------- \033[0m\n" << endl;
 				ScannerStatus = turnRightDetected;
 			}else if (this->VirageGaucheVec.size() > 0)
 			{
 
 				resetDetection();
-
+				//cout << "\033[1;31m \n------------\VIRAGE GAUCHE DETECTE\n---------- \033[0m\n" << endl;
 				ScannerStatus = turnLeftDetected;
 			}
 			else if (this->PanneauStopVec.size() <= 0 && this->FeuTrafficVec.size() <= 0
@@ -377,18 +392,19 @@ int main() {
 	
 	//on creer le socket d'envoie
 	string portSend = "27016";
-	CarServerSocket SocVoiture(portSend);
-	SocVoiture.initSoc();
+	//CarServerSocket SocVoiture(portSend);
+	//SocVoiture.initSoc();
 
 	
 	ObjectScanner s1;
-	Vehicule v1(SocVoiture, s1);
-	
-	thread v(&Vehicule::goSmart, v1);
 	thread t(&ObjectScanner::sceneScan, s1);
 	
+	//Vehicule v1(SocVoiture, s1);
+	//thread v(&Vehicule::goSmart, v1);
 	
-	v.join();
+	
+	
+	//v.join();
 	t.join();
 	
 	return 0;
@@ -396,40 +412,42 @@ int main() {
 
 
 
-
+/*
 //main pour tester sockets
-/*  TEST SERVEUR:
+ // TEST SERVEUR:
 int main(void)
 {
 	///////////:RECEPTION
-	string portRecv = "27015";
-	CarServerSocket SocRecv(portRecv);
-	//string portSend = "27016";
-	//CarServerSocket SocSend(portSend);
-	while (SocRecv.initSoc() == 0)
+	//string portRecv = "27015";
+	//CarServerSocket SocRecv(portRecv);
+	/*string portSend = "27016";
+	CarServerSocket SocSend(portSend);
+	string s = "3";
+	while (SocSend.initSoc() == 0)
 	{
-		string s;
 		while (1)
 		{
-			s = SocRecv.msgRecu();
+			 SocSend.msgEnvoi(s);
 			cout << "String recu:  " << s << endl;
 		}
 	}
-	SocRecv.~CarServerSocket();
+	SocSend.~CarServerSocket();
+	*/
+/*
 /////////////////ENVOIE://///////////////////
 	string portSend = "27016";
-	char mymsg[10] = "blabla";
+	char mymsg[] = "bla!";
 	CarServerSocket SocSend(portSend);
 	int i = 0;
 	while (SocSend.initSoc() == 0) {
-		while (i < 600) {
+		while (i < 6000000) {
 		SocSend.msgEnvoi(mymsg);
 		i++;
 		}
 	}
 	return 0;
 }
-*/
+
 
 
 

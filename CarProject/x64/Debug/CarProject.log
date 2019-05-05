@@ -1,6 +1,4 @@
 ﻿  CarProject.cpp
-d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(357): warning C4129: 'S': unrecognized character escape sequence
-d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(358): warning C4129: 'F': unrecognized character escape sequence
-  mainClient.cpp
-d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\mainclient.cpp(15): fatal error C1083: Cannot open include file: 'sys/socket.h': No such file or directory
-  Generating Code...
+d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(372): warning C4129: 'S': unrecognized character escape sequence
+d:\mega\backkkkkkuppp\backup usb 2go noir\fac\2eme année\4eme semestre\c++\project\code\carproject\smartcar\carproject\carproject.cpp(373): warning C4129: 'F': unrecognized character escape sequence
+  CarProject.vcxproj -> D:\MEGA\BACKKKKKKUPPP\backup USB 2Go noir\FAC\2eme année\4eme semestre\C++\Project\code\CarProject\SmartCar\x64\Debug\CarProject.exe

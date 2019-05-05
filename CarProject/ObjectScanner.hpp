@@ -19,11 +19,16 @@ private:
 	std::string ClassifierTrainingVirageDroite = "C:/Users/mhaba/OneDrive/Desktop/DirectionRight.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
 	std::string ClassifierTrainingVirageGauche = "C:/Users/mhaba/OneDrive/Desktop/DirectionLeft.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.	
 	cv::VideoCapture VideoStream;
-	std::string videoSourceURL = "http://192.168.43.109:8080/video";
+	//std::string videoSourceURL = "http://192.168.43.109:8080/video";
+	int videoSourceURL = 0;
+	cv::Ptr<cv::CascadeClassifier> cascadeStop;
+	cv::Ptr<cv::CascadeClassifier> cascadeFeuxRouge;
+	cv::Ptr<cv::CascadeClassifier> cascadeVirageDroite;
+	cv::Ptr<cv::CascadeClassifier> cascadeVirageGauche;
 	cv::Ptr<cv::CascadeClassifier> Detector;
 
-public:
 
+public:
 	cv::VideoCapture lancerCam();
 	ObjectScanner();
 	ObjectScanner(cv::Ptr<cv::CascadeClassifier> detector);
@@ -32,13 +37,17 @@ public:
 	void resetDetection();
 	int sceneScan();
 	virtual ~ObjectScanner();
+
+
 };
+
 
 ObjectScanner::ObjectScanner(cv::Ptr<cv::CascadeClassifier> detector) : IDetector(), Detector(detector)
 {
 	CV_Assert(detector);
 
 }
+
 ObjectScanner::~ObjectScanner()
 {
 }
