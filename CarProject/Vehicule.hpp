@@ -8,10 +8,9 @@ class Vehicule {
 
 private:
 	CarServerSocket* carSoc;
-	ObjectScanner* objDetection;
 
 public:
-	Vehicule(CarServerSocket& carSoc, ObjectScanner& objDetection);
+	Vehicule(CarServerSocket& carSoc);
 	void forward();
 	void backward();
 	void right();

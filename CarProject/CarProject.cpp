@@ -28,11 +28,11 @@ const int trafficLightsDetected = 4;
 const int turnRightDetected = 5;
 const int turnLeftDetected = 6;
 ////////////////////////////////////
-const string forwardAction = "1!";
-const string BackwardAction = "2!";
-const string rightAction = "3!";
-const string leftAction = "4!";
-const string stopAction = "5!";
+const string forwardAction = "1";
+const string BackwardAction = "2";
+const string rightAction = "3";
+const string leftAction = "4";
+const string stopAction = "5";
 
 
 
@@ -45,15 +45,11 @@ string CarServerSocket::msgRecu() {
 	if (this->iResult > 0)
 	{
 
-
 		for (int i = 0; i < this->iResult; i++)
 		{
 			msg += this->recvbuf[i];
 		}
 		return msg;
-
-
-
 	}
 
 	else if (iResult == 0)
@@ -69,11 +65,11 @@ string CarServerSocket::msgRecu() {
 	exit(1);
 }
 void CarServerSocket::msgEnvoi(string msgEnvoie) {
-	//le message sera 1 ou 2 ou 3 ..etc donc char[1]
-	//char envoiebuff[1] = { msg };
-
+	// ! est un delimiteur
+	msgEnvoie += "!";
 	int n = (int) msgEnvoie.length();
 	strcpy_s(this->sendBuffer, msgEnvoie.c_str());
+	
 	// on Envoie le message
 	iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
 	//this_thread::sleep_for(chrono::milliseconds(10));
@@ -260,10 +256,9 @@ int ObjectScanner::sceneScan()
 }
 
 
-Vehicule::Vehicule(CarServerSocket& carSoc, ObjectScanner& objDetection)
+Vehicule::Vehicule(CarServerSocket& carSoc)
 {
 	this->carSoc = &carSoc;
-	this->objDetection = &objDetection;
 }
 void  Vehicule::forward()
 {
@@ -377,24 +372,20 @@ int Vehicule::goSmart()
 
 int main() {
 
-	
-	//on creer le socket d'envoie
+	///////////////////Server Socket/////////////////	
 	string portSend = "27016";
 	CarServerSocket SocVoiture(portSend);
 	SocVoiture.initSoc();
-
-	
+	////////////////////Object detect module////////////
 	ObjectScanner s1;
 	thread t(&ObjectScanner::sceneScan, s1);
-	
-	Vehicule v1(SocVoiture, s1);
+	t.detach();
+	//////////////////Decision module////////////////
+	Vehicule v1(SocVoiture);
 	thread v(&Vehicule::goSmart, v1);
-	
-	
-	
+		
 	v.join();
 	t.join();
-	
 	return 0;
 }
 
