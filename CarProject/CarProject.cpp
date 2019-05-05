@@ -1,5 +1,5 @@
 ﻿
-#define DEFAULT_BUFLEN 6
+#define DEFAULT_BUFLEN 3
 
 
 #include "Vehicule.hpp"
@@ -28,11 +28,11 @@ const int trafficLightsDetected = 4;
 const int turnRightDetected = 5;
 const int turnLeftDetected = 6;
 ////////////////////////////////////
-const string forwardAction = "1";
-const string BackwardAction = "2";
-const string rightAction = "3";
-const string leftAction = "4";
-const string stopAction = "5";
+const string forwardAction = "1!";
+const string BackwardAction = "2!";
+const string rightAction = "3!";
+const string leftAction = "4!";
+const string stopAction = "5!";
 
 
 
@@ -106,9 +106,6 @@ VideoCapture ObjectScanner::lancerCam()
 ObjectScanner::ObjectScanner()
 {
 }
-
-
-
 void ObjectScanner::detect(const Mat & Image, std::vector<Rect>& objects)
 {
 	Detector->detectMultiScale(Image, objects, scaleFactor, minNeighbours, 0, minObjSize, maxObjSize);
@@ -286,8 +283,6 @@ void Vehicule::left()
 }
 void Vehicule::stop()
 {
-	this->backward(); //pour arreter les roues rapidement
-	Sleep(30);
 	this->carSoc->msgEnvoi(stopAction);
 }
 int Vehicule::returnIfObstacle() {
@@ -324,23 +319,16 @@ void Vehicule::redTrafficLightManeuver()
 	Sleep(50);
 }
 void Vehicule::turnRightManeuver()
-{
-	
+{	
 	this->stop();
-	Sleep(10);
 	this->right();
 	Sleep(1000);
-	this->stop();
-
-
 }
 void Vehicule::turnLeftManeuver()
 {
 	this->stop();
-	Sleep(10);
 	this->left();
 	Sleep(1000);
-	this->stop();
 }
 int Vehicule::goSmart()
 {
@@ -379,7 +367,7 @@ int Vehicule::goSmart()
 			
 		 }else {
 			 this->stop();
-			 cout << "Obstacle Detectee" << endl;
+			 cout << "\033[1;31m \n------------\OBSTACLE DETECTEE\n---------- \033[0m\n" << endl;
 		 }
 		
 	}
@@ -392,19 +380,19 @@ int main() {
 	
 	//on creer le socket d'envoie
 	string portSend = "27016";
-	//CarServerSocket SocVoiture(portSend);
-	//SocVoiture.initSoc();
+	CarServerSocket SocVoiture(portSend);
+	SocVoiture.initSoc();
 
 	
 	ObjectScanner s1;
 	thread t(&ObjectScanner::sceneScan, s1);
 	
-	//Vehicule v1(SocVoiture, s1);
-	//thread v(&Vehicule::goSmart, v1);
+	Vehicule v1(SocVoiture, s1);
+	thread v(&Vehicule::goSmart, v1);
 	
 	
 	
-	//v.join();
+	v.join();
 	t.join();
 	
 	return 0;

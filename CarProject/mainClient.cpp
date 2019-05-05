@@ -180,11 +180,6 @@ void Motor::TakeAction(string action)
 
 
 
-
-
-
-
-
 class CarClientSocket {
 private:
 
@@ -192,7 +187,7 @@ private:
 	int ret;
 	struct hostent *host;
 	struct sockaddr_in addrsrv;
-	char msg[128];
+	char msg[3];
 	bool isConnected;
 	int portnum;
 
@@ -249,28 +244,29 @@ void CarClientSocket::msgEnvoie(string s)
 }
 string CarClientSocket::msgRecv()
 {
+	char c;
 	string msgRecu = "";
-	if ((ret = recv(sd, msg, sizeof(msg), 0)) == -1) {
-		perror("Erreur recvfrom");
-	}
-	if (this->ret > 0) {
-
-		for (int i = 0; i < this->ret; i++) {
-			msgRecu += this->msg[i];
+	while (1) {
+		if ((ret = recv(sd, &c, 1, 0)) == -1) {
+			perror("Erreur recvfrom");
 		}
-		return msgRecu;
+		if (this->ret > 0) {
+			if (c != '!') {
+				msgRecu = msgRecu + c;
+			}
+			else {
+				return msgRecu;
+			}
+		}
+		else if (ret == 0) printf("femerutre de la connexion.....\n");
 
+		else {
+			printf("Erreur recv (COnnexion perdu avec le serveur?");
+			shutdown(sd, SHUT_RDWR);
+			close(sd);
+			Motor::CleanGPIO(0);
+		}
 	}
-	else if (ret == 0) printf("femerutre de la connexion.....\n");
-
-	else {
-		printf(" Communication avec serveur interrompu \n");
-		shutdown(sd, SHUT_RDWR);
-		close(sd);
-		Motor::CleanGPIO(0);
-
-	}
-	exit(1);
 }
 bool CarClientSocket::retIsConnected()
 {

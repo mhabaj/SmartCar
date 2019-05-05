@@ -1,6 +1,6 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
-#define DEFAULT_BUFLEN 6
+#define DEFAULT_BUFLEN 3
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <string>
@@ -101,7 +101,7 @@ int CarServerSocket::initSoc() {
 
 	// On met la socket en Attente
 	closesocket(ListenSocket);
-	std::cout << "loading.." << std::endl; //(On met un peu de temps de chargement pour etre sur que les deux parties sont pret)
+	std::cout << "loading.." << std::endl; //(On met un peu de temps de chargement pour etre sur que les deux parties sont prets et syncro)
 	Sleep(2000);
 	return 0;
 }
