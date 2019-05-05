@@ -298,8 +298,9 @@ void Vehicule::stopSignManeuver()
 	while (returnIfObstacle() == 1) {
 		cout << "Obstacle detectee, On reste sur place" << endl;
 	}
-	this->forward();
-
+	while (ScannerStatus == stopDetected) {
+		this->forward(); //on avance jusqu'à depasser le panneau .
+	}
 	Sleep(2000);
 }
 void Vehicule::redTrafficLightManeuver()
@@ -327,7 +328,7 @@ void Vehicule::turnLeftManeuver()
 }
 int Vehicule::goSmart()
 {
-	cout << "Preparing Video.." << endl;
+	cout << "Video Sync.." << endl;
 	Sleep(15000); //On laisse le temps pour l'initialisation et syncro video.
 	int status = -2;
 	int isObstacle = 1;
@@ -352,8 +353,8 @@ int Vehicule::goSmart()
 				switch (status)
 				{
 				case NothingDetected:  cout << "\033[1;31m \n------------\nRAS\n---------- \033[0m\n" << endl; this->forward(); break;
-				case stopDetected: cout << "\033[1;31m \n------------\STOP DETECTE\n---------- \033[0m\n" << endl;  this->stopSignManeuver(); break;
-				case trafficLightsDetected:  cout << "\033[1;31m \n------------\FEU DETECTEE\n---------- \033[0m\n" << endl; this->redTrafficLightManeuver(); break;
+				case stopDetected: cout << "\033[1;31m \n-----------\nSTOP DETECTE\n---------- \033[0m\n" << endl;  this->stopSignManeuver(); break;
+				case trafficLightsDetected:  cout << "\033[1;31m \n------------\nFEU DETECTEE\n---------- \033[0m\n" << endl; this->redTrafficLightManeuver(); break;
 				case turnRightDetected:  cout << "\033[1;31m \n------------\n VIRAGE A DROITE DETECTEE \n---------- \033[0m\n" << endl; turnRightManeuver(); break;
 				case turnLeftDetected:  cout << "\033[1;31m \n------------\n VIRAGE A GAUCHE DETECTEE \n---------- \033[0m\n" << endl; turnLeftManeuver(); break;
 				
@@ -362,7 +363,7 @@ int Vehicule::goSmart()
 			
 		 }else {
 			 this->stop();
-			 cout << "\033[1;31m \n------------\OBSTACLE DETECTEE\n---------- \033[0m\n" << endl;
+			 cout << "\033[1;31m \n------------\nOBSTACLE DETECTEE\n---------- \033[0m\n" << endl;
 		 }
 		
 	}

@@ -1,5 +1,5 @@
-/*
 
+/*
 // Commandes compilation:
 //gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread    ---> IR Sensor
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
@@ -35,10 +35,11 @@ const char hostname[] = "192.168.43.244";
 
 class Motor {
 	//Parametres Wiring Pi moteurs:
-#define motorPin1	5	//forward
-#define motorPin2	6	//backward
-#define leftPin	12	//gauche
-#define rightPin 13	//droite
+private:
+	int motorPin1 = 5;	//forward
+	int motorPin2 = 6;	//backward
+	int leftPin = 12;	//gauche
+	int rightPin = 13;	//droite
 public:
 	static void motorStop();
 	static void CleanGPIO(int signum);
@@ -140,7 +141,7 @@ int Motor::motorInitialisation()
 void Motor::TakeAction(string action)
 {
 	int n = std::stoi(action);
-	cout << "ACTION RECUUUUUUUUUUUUUUUUUU" << n << endl;
+	cout << "ACTION RECU: " << n << endl;
 	switch (n) {
 	case 1: Motor::motorForward();  break;
 	case 2: Motor::motorBackward(); break;
@@ -148,33 +149,8 @@ void Motor::TakeAction(string action)
 	case 4: Motor::motorLeftForward(); break;
 	case 5: Motor::motorStop(); break;
 	default: Motor::motorStop(); cout << "Commande deplacement invalide" << endl; break;
-
-
 	}
-	///////OU BIEN///////
-	if (n == 1) {
-		Motor::motorForward();
-
-	}
-	else if (n == 2) {
-		Motor::motorBackward();
-
-	}
-	else if (n == 3) {
-		Motor::motorRightForward();
-
-	}
-	else if (n == 4) {
-		Motor::motorLeftForward();
-
-	}
-	else if (n == 5) {
-		Motor::motorStop();
-
-	}
-	else {
-		Motor::motorStop(); cout << "Commande deplacement invalide" << endl;
-	}
+	
 }
 
 
@@ -306,12 +282,11 @@ int IRSensor::irSetup()
 	pinMode(irReception, INPUT);
 }
 int IRSensor::isObstacle() {
-	delay(35);
-
+	delay(25);
 	if (digitalRead(irReception) == 0) {
 		delay(25);
 		if (digitalRead(irReception) == 0) {
-			printf("Detected Barrier !\n");
+			printf("OBSTACLE DETECTEE !! \n");
 			return 1;
 		}
 		else {
@@ -338,13 +313,13 @@ private:
 	const int puceEnvoie = 23;
 	const int puceReception = 24;
 	const int MAX_DISTANCE = 60; //50 à cause des pertes et des faux-positives.
-	const int timeOut = MAX_DISTANCE * 60;// calculate timeout according to the maximum measured distanc
+	const int TempsMaxAttente = MAX_DISTANCE * 60;// calculate TempsMaxAttente according to the maximum measured distanc
 	long pingTime;
 	float distance;
 	CarClientSocket* SocketSonar;
 public:
 	Sonar(CarClientSocket& SocketSonar);
-	int pulseIn(int pin, int level, int timeout);
+	int pulseIn(int pin, int level, int TempsMaxAttente);
 	double getSonar();
 	int setupSonar();
 	int retSonarData();
@@ -353,7 +328,7 @@ public:
 Sonar::Sonar(CarClientSocket& SocketSonar) {
 	this->SocketSonar = &SocketSonar;
 }
-int Sonar::pulseIn(int pin, int level, int timeout)
+int Sonar::pulseIn(int pin, int level, int TempsMaxAttente)
 {
 	struct timeval tn, t0, t1;
 	long micros;
@@ -364,7 +339,7 @@ int Sonar::pulseIn(int pin, int level, int timeout)
 		gettimeofday(&tn, NULL);
 		if (tn.tv_sec > t0.tv_sec) micros = 1000000L; else micros = 0;
 		micros += (tn.tv_usec - t0.tv_usec);
-		if (micros > timeout) return 0;
+		if (micros > TempsMaxAttente) return 0;
 	}
 	gettimeofday(&t1, NULL);
 	while (digitalRead(pin) == level)
@@ -372,7 +347,7 @@ int Sonar::pulseIn(int pin, int level, int timeout)
 		gettimeofday(&tn, NULL);
 		if (tn.tv_sec > t0.tv_sec) micros = 1000000L; else micros = 0;
 		micros = micros + (tn.tv_usec - t0.tv_usec);
-		if (micros > timeout) return 0;
+		if (micros > TempsMaxAttente) return 0;
 	}
 	if (tn.tv_sec > t1.tv_sec) micros = 1000000L; else micros = 0;
 	micros = micros + (tn.tv_usec - t1.tv_usec);
@@ -385,7 +360,7 @@ double Sonar::getSonar()
 	digitalWrite(this->puceEnvoie, HIGH);
 	delayMicroseconds(35);
 	digitalWrite(this->puceEnvoie, LOW);
-	pingTime = pulseIn(this->puceReception, HIGH, this->timeOut);
+	pingTime = pulseIn(this->puceReception, HIGH, this->TempsMaxAttente);
 	if (this->pingTime <= 1) {
 		return -1.0; //trop proche ou trop loin
 	}
@@ -409,18 +384,14 @@ int Sonar::retSonarData()
 	double sonarvalue = getSonar();
 	if (sonarvalue <= 40 && sonarvalue > -1) {
 		return 1;
-		//SocketSonar->msgEnvoie("1");
 	}
 	else {
 		return 0;
-
-		//SocketSonar->msgEnvoie("0");
 	}
 }
 void Sonar::sendSonarData(int SonarData)
 {
 	SocketSonar->msgEnvoie(to_string(SonarData));
-
 }
 
 
@@ -456,7 +427,7 @@ bool Vehicule::sendInfo() {
 	}
 	else {
 		irSensor->sendIRSensorData(0);
-
+		sonar->sendSonarData(0);
 	}
 }
 Vehicule::~Vehicule()
@@ -523,17 +494,11 @@ Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sona
 
 
 int main(void) {
-
-
-
-
 	CarClientSocket socketIO(27016);
 	Sonar sonar(socketIO);
 	IRSensor ir1(socketIO);
 	Vehicule v1(socketIO, ir1, sonar);
-
 	v1.startup();
-
 	return 0;
 }
 
