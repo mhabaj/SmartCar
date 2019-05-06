@@ -2,7 +2,7 @@
 #define DEFAULT_BUFLEN 3
 
 
-#include "Vehicule.hpp"
+#include "VehiculeServ.hpp"
 #include <fstream>
 #include <iostream>
 #include <filesystem>
@@ -256,31 +256,31 @@ int ObjectScanner::sceneScan()
 }
 
 
-Vehicule::Vehicule(CarServerSocket& carSoc)
+VehiculeServ::VehiculeServ(CarServerSocket& carSoc)
 {
 	this->carSoc = &carSoc;
 }
-void  Vehicule::forward()
+void  VehiculeServ::forward()
 {
 	this->carSoc->msgEnvoi(forwardAction);
 }
-void Vehicule::backward()
+void VehiculeServ::backward()
 {
 	this->carSoc->msgEnvoi(BackwardAction);
 }
-void Vehicule::right()
+void VehiculeServ::right()
 {
 	this->carSoc->msgEnvoi(rightAction);
 }
-void Vehicule::left()
+void VehiculeServ::left()
 {
 	this->carSoc->msgEnvoi(leftAction);
 }
-void Vehicule::stop()
+void VehiculeServ::stop()
 {
 	this->carSoc->msgEnvoi(stopAction);
 }
-int Vehicule::returnIfObstacle() {
+int VehiculeServ::returnIfObstacle() {
 	string s = this->carSoc->msgRecu();
 	string infoRecv = s.substr(s.length()-1, 1);
 	cout << "INFO RECIEVED: " << infoRecv << endl;
@@ -290,7 +290,7 @@ int Vehicule::returnIfObstacle() {
 	}
 	else return 0;
 }
-void Vehicule::stopSignManeuver()
+void VehiculeServ::stopSignManeuver()
 {
 	Sleep(300);
 	this->stop();
@@ -303,7 +303,7 @@ void Vehicule::stopSignManeuver()
 	}
 	Sleep(2000);
 }
-void Vehicule::redTrafficLightManeuver()
+void VehiculeServ::redTrafficLightManeuver()
 {
 	this->stop();
 	Sleep(100);
@@ -314,19 +314,19 @@ void Vehicule::redTrafficLightManeuver()
 	this->forward();
 	Sleep(50);
 }
-void Vehicule::turnRightManeuver()
+void VehiculeServ::turnRightManeuver()
 {	
 	this->stop();
 	this->right();
 	Sleep(1000);
 }
-void Vehicule::turnLeftManeuver()
+void VehiculeServ::turnLeftManeuver()
 {
 	this->stop();
 	this->left();
 	Sleep(1000);
 }
-int Vehicule::goSmart()
+int VehiculeServ::goSmart()
 {
 	cout << "Video Sync.." << endl;
 	Sleep(15000); //On laisse le temps pour l'initialisation et syncro video.
@@ -368,10 +368,7 @@ int Vehicule::goSmart()
 		
 	}
 }
-
-
-
-int main() {
+void VehiculeServ::start() {
 
 	///////////////////Server Socket/////////////////	
 	string portSend = "27016";
@@ -382,11 +379,22 @@ int main() {
 	thread t(&ObjectScanner::sceneScan, s1);
 	t.detach();
 	//////////////////Decision module////////////////
-	Vehicule v1(SocVoiture);
-	thread v(&Vehicule::goSmart, v1);
-		
+	VehiculeServ v1(SocVoiture);
+	thread v(&VehiculeServ::goSmart, v1);
+
 	v.join();
 	t.join();
+
+
+
+}
+
+
+int main() {
+
+	VehiculeServ::start();
+
+	
 	return 0;
 }
 

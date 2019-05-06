@@ -1,28 +1,73 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
   <Class Name="CarServerSocket">
-    <Position X="1.5" Y="0.75" Width="3" />
+    <Position X="2" Y="1.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>ABAQAAAAEAACIAgEBACGACAAAAAACAAAAAAgABAEAgA=</HashCode>
       <FileName>CarServerSocket.hpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="ObjectScanner">
-    <Position X="11" Y="1" Width="3" />
+    <Position X="6" Y="1.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>IGAAAAggAAAIAAAAAAACKAAAAAAAAACAAICACAEgAAg=</HashCode>
+      <HashCode>IGAAAAggIAAIAAAAAAAKKAABAAAAAACAAICACAEgAAg=</HashCode>
       <FileName>ObjectScanner.hpp</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Vehicule">
-    <Position X="6" Y="0.5" Width="2.75" />
+  <Class Name="VehiculeServ">
+    <Position X="4" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAgIAAAAAgAIAAAAgAQBAAAAoEAAAABACBAAAgAA=</HashCode>
-      <FileName>Vehicule.hpp</FileName>
+      <HashCode>AAAAAgICAAAAgAIgAAAgAABAAAAoAAAAABACBAAAgAA=</HashCode>
+      <FileName>VehiculeServ.hpp</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
       <Field Name="carSoc" />
-      <Field Name="objDetection" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Motor">
+    <Position X="12.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAKAAAABAAAAAAACAAAAAAQBACAAAAAACAIAAAEAY=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CarClientSocket">
+    <Position X="10.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAABAAAAAAAIAAAAAKgQAAAEAAAAAAAAQwAAAAAAAg=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IRSensor">
+    <Position X="15" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAABAAEIAAAIAAAAAAIAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="SocketIR" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Sonar">
+    <Position X="8.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAiAAAAAAAAARAAAAAEEAAAIAIIACAAKCAAA=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="SocketSonar" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="VehiculeClient">
+    <Position X="14.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAQAAAAAAAAAAIAAAAAEACAgQBAAAAIAAAAQAAAAAAA=</HashCode>
+      <FileName>mainClient.cpp</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="irSensor" />
+      <Field Name="socketIO" />
+      <Field Name="sonar" />
     </ShowAsAssociation>
   </Class>
   <Font Name="Segoe UI" Size="9" />

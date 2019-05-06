@@ -4,13 +4,13 @@
 
 
 
-class Vehicule {
+class VehiculeServ {
 
 private:
 	CarServerSocket* carSoc;
 
 public:
-	Vehicule(CarServerSocket& carSoc);
+	VehiculeServ(CarServerSocket& carSoc);
 	void forward();
 	void backward();
 	void right();
@@ -22,4 +22,5 @@ public:
 	void turnRightManeuver();
 	void turnLeftManeuver();
 	int goSmart();
+	static void start();
 };

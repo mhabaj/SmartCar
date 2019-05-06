@@ -1,5 +1,5 @@
-
 /*
+
 // Commandes compilation:
 //gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread    ---> IR Sensor
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
@@ -400,22 +400,22 @@ void Sonar::sendSonarData(int SonarData)
 
 
 
-class Vehicule {
+class VehiculeClient {
 private:
 	CarClientSocket* socketIO;
 	IRSensor* irSensor;
 	Sonar* sonar;
 	bool status;
 public:
-	Vehicule(CarClientSocket& socketIO,
+	VehiculeClient(CarClientSocket& socketIO,
 		IRSensor& irSensor, Sonar& sonar);
 	int prepareComponents();
 	void startup();
 	void doMovements();
 	bool sendInfo();
-	~Vehicule();
+	~VehiculeClient();
 };
-bool Vehicule::sendInfo() {
+bool VehiculeClient::sendInfo() {
 	int isObstacleReact = irSensor->isObstacle();
 	int isSonarReact = sonar->retSonarData();
 	if (isObstacleReact == 1) {
@@ -430,7 +430,7 @@ bool Vehicule::sendInfo() {
 		sonar->sendSonarData(0);
 	}
 }
-Vehicule::~Vehicule()
+VehiculeClient::~VehiculeClient()
 {
 	Motor::resetGPIO();
 	delete socketIO;
@@ -442,14 +442,14 @@ Vehicule::~Vehicule()
 
 
 }
-void Vehicule::doMovements() {
+void VehiculeClient::doMovements() {
 	string actionTemp = socketIO->msgRecv();
 	string action = actionTemp.substr(actionTemp.length() - 1, 1);
 	cout << "action demandee: " << action << endl;
 	Motor::TakeAction(action);
 
 }
-void Vehicule::startup() {
+void VehiculeClient::startup() {
 
 	if (this->prepareComponents() == 1) {
 		while (1) {
@@ -462,7 +462,7 @@ void Vehicule::startup() {
 		exit(0);
 	}
 }
-int Vehicule::prepareComponents() {
+int VehiculeClient::prepareComponents() {
 	cout << "preparing Components.. " << endl;
 
 	Motor::motorInitialisation();
@@ -480,7 +480,7 @@ int Vehicule::prepareComponents() {
 
 
 }
-Vehicule::Vehicule(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sonar)
+VehiculeClient::VehiculeClient(CarClientSocket & socketIO, IRSensor & irSensor, Sonar & sonar)
 {
 
 	this->socketIO = &socketIO;
@@ -497,7 +497,7 @@ int main(void) {
 	CarClientSocket socketIO(27016);
 	Sonar sonar(socketIO);
 	IRSensor ir1(socketIO);
-	Vehicule v1(socketIO, ir1, sonar);
+	VehiculeClient v1(socketIO, ir1, sonar);
 	v1.startup();
 	return 0;
 }
