@@ -372,16 +372,16 @@ void VehiculeServ::start() {
 
 	///////////////////Server Socket/////////////////	
 	string portSend = "27016";
-	//CarServerSocket SocVoiture(portSend);
-	//SocVoiture.initSoc();
+	CarServerSocket SocVoiture(portSend);
+	SocVoiture.initSoc();
 	////////////////////Object detect module////////////
 	ObjectScanner s1;
 	thread t(&ObjectScanner::sceneScan, s1);
 	//////////////////Decision module////////////////
-	//VehiculeServ v1(SocVoiture);
-	//thread v(&VehiculeServ::goSmart, v1);
+	VehiculeServ v1(SocVoiture);
+	thread v(&VehiculeServ::goSmart, v1);
 
-	//v.join();
+	v.join();
 	t.join();
 
 

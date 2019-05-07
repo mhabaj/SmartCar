@@ -1,4 +1,4 @@
-/*
+
 
 // Commandes compilation:
 //gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread    ---> IR Sensor
@@ -214,7 +214,7 @@ void CarClientSocket::msgEnvoie(string s)
 	}
 	else {
 		printf("sendto = %d; msg = %s\n", ret, msg);
-		this_thread::sleep_for(chrono::milliseconds(10));
+		this_thread::sleep_for(chrono::milliseconds(35));
 
 	}
 }

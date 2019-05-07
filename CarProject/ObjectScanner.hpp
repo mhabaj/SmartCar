@@ -19,8 +19,8 @@ private:
 	std::string ClassifierTrainingVirageDroite = "assets/DirectionRight.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
 	std::string ClassifierTrainingVirageGauche = "assets/DirectionLeft.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.	
 	cv::VideoCapture VideoStream;
-	//std::string videoSourceURL = "http://192.168.43.109:8080/video";
-	int videoSourceURL = 0;
+	std::string videoSourceURL = "http://192.168.43.109:8080/video";
+	//int videoSourceURL = 0;
 	cv::Ptr<cv::CascadeClassifier> cascadeStop;
 	cv::Ptr<cv::CascadeClassifier> cascadeFeuxRouge;
 	cv::Ptr<cv::CascadeClassifier> cascadeVirageDroite;
