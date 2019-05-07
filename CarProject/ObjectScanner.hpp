@@ -14,10 +14,10 @@ class ObjectScanner : public cv::DetectionBasedTracker::IDetector
 private:
 
 	std::vector<cv::Rect> PanneauStopVec, FeuTrafficVec, VirageDroiteVec, VirageGaucheVec;
-	std::string ClassifierTrainingStop = "C:/Users/mhaba/OneDrive/Desktop/StopSign.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
-	std::string ClassifierTrainingFeuRouge = "C:/Users/mhaba/OneDrive/Desktop/TrafficLights.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.
-	std::string ClassifierTrainingVirageDroite = "C:/Users/mhaba/OneDrive/Desktop/DirectionRight.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
-	std::string ClassifierTrainingVirageGauche = "C:/Users/mhaba/OneDrive/Desktop/DirectionLeft.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.	
+	std::string ClassifierTrainingStop = "assets/StopSign.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
+	std::string ClassifierTrainingFeuRouge = "assets/TrafficLights.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.
+	std::string ClassifierTrainingVirageDroite = "assets/DirectionRight.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT stop.
+	std::string ClassifierTrainingVirageGauche = "assets/DirectionLeft.xml"; //URL VERS LES DONNEES DE LENTRAINEMENT feu rouge.	
 	cv::VideoCapture VideoStream;
 	//std::string videoSourceURL = "http://192.168.43.109:8080/video";
 	int videoSourceURL = 0;

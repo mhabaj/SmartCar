@@ -133,37 +133,37 @@ int ObjectScanner::sceneScan()
 		string fichierXmlCascadeStop = samples::findFile(this->ClassifierTrainingStop);
 		string fichierXmlCascadeRouge = samples::findFile(this->ClassifierTrainingFeuRouge);
 		string fichierXmlVirageDroite = samples::findFile(this->ClassifierTrainingVirageDroite);
-		string fichierXmlVirageGauche = samples::findFile(this->ClassifierTrainingVirageGauche);
+		//string fichierXmlVirageGauche = samples::findFile(this->ClassifierTrainingVirageGauche);
 
 
 
 		 cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
 		 cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
 		 cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
-		 cascadeVirageGauche = makePtr<CascadeClassifier>(fichierXmlVirageGauche);
+		 //cascadeVirageGauche = makePtr<CascadeClassifier>(fichierXmlVirageGauche);
 
 		 Ptr<DetectionBasedTracker::IDetector> detectStopPrincipale = makePtr<ObjectScanner>(cascadeStop);
 		 Ptr<DetectionBasedTracker::IDetector> detectFeuxRougePrincipale = makePtr<ObjectScanner>(cascadeFeuxRouge);
 		 Ptr<DetectionBasedTracker::IDetector> detectVirageDroitePrincipale = makePtr<ObjectScanner>(cascadeVirageDroite);
-		 Ptr<DetectionBasedTracker::IDetector> detectVirageGauchePrincipale = makePtr<ObjectScanner>(cascadeVirageGauche);
+		 //Ptr<DetectionBasedTracker::IDetector> detectVirageGauchePrincipale = makePtr<ObjectScanner>(cascadeVirageGauche);
 
 
 		cascadeStop = makePtr<CascadeClassifier>(fichierXmlCascadeStop);
 		cascadeFeuxRouge = makePtr<CascadeClassifier>(fichierXmlCascadeRouge);
 		cascadeVirageDroite = makePtr<CascadeClassifier>(fichierXmlVirageDroite);
-		cascadeVirageGauche = makePtr<CascadeClassifier>(fichierXmlVirageGauche);
+		//cascadeVirageGauche = makePtr<CascadeClassifier>(fichierXmlVirageGauche);
 
 		Ptr<DetectionBasedTracker::IDetector> DetecteurStopTrack = makePtr<ObjectScanner>(cascadeStop);
 		Ptr<DetectionBasedTracker::IDetector> DetecteurFeuxRougeTrack = makePtr<ObjectScanner>(cascadeFeuxRouge);
 		Ptr<DetectionBasedTracker::IDetector> DetecteurVirageDroiteTrack = makePtr<ObjectScanner>(cascadeVirageDroite);
-		Ptr<DetectionBasedTracker::IDetector> DetecteurVirageGaucheTrack = makePtr<ObjectScanner>(cascadeVirageGauche);
+		//Ptr<DetectionBasedTracker::IDetector> DetecteurVirageGaucheTrack = makePtr<ObjectScanner>(cascadeVirageGauche);
 		
 		DetectionBasedTracker::Parameters params;
 		
 		DetectionBasedTracker DetectorStop(detectStopPrincipale, DetecteurStopTrack, params);
 		DetectionBasedTracker DetectorFeuxRouge(detectFeuxRougePrincipale, DetecteurFeuxRougeTrack, params);
 		DetectionBasedTracker DetectorVirageDroite(detectVirageDroitePrincipale, DetecteurVirageDroiteTrack, params);
-		DetectionBasedTracker DetectorVirageGauche(detectVirageGauchePrincipale, DetecteurVirageGaucheTrack, params);
+		//DetectionBasedTracker DetectorVirageGauche(detectVirageGauchePrincipale, DetecteurVirageGaucheTrack, params);
 
 		Mat FrameInitiale;
 		Mat FrameModifiee;
@@ -179,8 +179,8 @@ int ObjectScanner::sceneScan()
 			DetectorVirageDroite.process(FrameModifiee);
 			DetectorVirageDroite.getObjects(VirageDroiteVec);
 			///////////////Virages Gauche:
-			DetectorVirageGauche.process(FrameModifiee);
-			DetectorVirageGauche.getObjects(VirageGaucheVec);
+			//DetectorVirageGauche.process(FrameModifiee);
+			//DetectorVirageGauche.getObjects(VirageGaucheVec);
 			///////////////PanneauStop:
 			DetectorStop.process(FrameModifiee);
 			DetectorStop.getObjects(PanneauStopVec);
@@ -249,7 +249,7 @@ int ObjectScanner::sceneScan()
 		DetectorStop.stop();
 		DetectorFeuxRouge.stop();
 		DetectorVirageDroite.stop();
-		DetectorVirageGauche.stop();
+		//DetectorVirageGauche.stop();
 
 	}
 	return 0;
@@ -372,17 +372,16 @@ void VehiculeServ::start() {
 
 	///////////////////Server Socket/////////////////	
 	string portSend = "27016";
-	CarServerSocket SocVoiture(portSend);
-	SocVoiture.initSoc();
+	//CarServerSocket SocVoiture(portSend);
+	//SocVoiture.initSoc();
 	////////////////////Object detect module////////////
 	ObjectScanner s1;
 	thread t(&ObjectScanner::sceneScan, s1);
-	t.detach();
 	//////////////////Decision module////////////////
-	VehiculeServ v1(SocVoiture);
-	thread v(&VehiculeServ::goSmart, v1);
+	//VehiculeServ v1(SocVoiture);
+	//thread v(&VehiculeServ::goSmart, v1);
 
-	v.join();
+	//v.join();
 	t.join();
 
 
