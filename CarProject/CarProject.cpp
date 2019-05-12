@@ -72,7 +72,7 @@ void CarServerSocket::msgEnvoi(string msgEnvoie) {
 	
 	// on Envoie le message
 	iSendResult = send(ClientSocket, this->sendBuffer, n, 0);
-	//this_thread::sleep_for(chrono::milliseconds(10));
+	this_thread::sleep_for(chrono::milliseconds(35));
 	//closesocket(ClientSocket);
 }
 
@@ -298,9 +298,9 @@ void VehiculeServ::stopSignManeuver()
 	while (returnIfObstacle() == 1) {
 		cout << "Obstacle detectee, On reste sur place" << endl;
 	}
-	while (ScannerStatus == stopDetected) {
+	//while (ScannerStatus == stopDetected) {
 		this->forward(); //on avance jusqu'à depasser le panneau .
-	}
+	//}
 	Sleep(2000);
 }
 void VehiculeServ::redTrafficLightManeuver()
@@ -318,13 +318,13 @@ void VehiculeServ::turnRightManeuver()
 {	
 	this->stop();
 	this->right();
-	Sleep(1000);
+	Sleep(2000);
 }
 void VehiculeServ::turnLeftManeuver()
 {
 	this->stop();
 	this->left();
-	Sleep(1000);
+	Sleep(2000);
 }
 int VehiculeServ::goSmart()
 {

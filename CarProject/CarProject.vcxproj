@@ -158,7 +158,6 @@
     <ClCompile Include="IRDetector.cpp" />
     <ClCompile Include="mainClient.cpp" />
     <ClCompile Include="MotorAction.cpp" />
-    <ClCompile Include="OralDetectionRap.cpp" />
     <ClCompile Include="SocketClient.cpp" />
     <ClCompile Include="UltrasonicRange.cpp" />
   </ItemGroup>
