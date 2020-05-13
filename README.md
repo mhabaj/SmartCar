@@ -1,7 +1,7 @@
 # SmartCar
 Autonomous Smart car project
 
-Pour comprendre le projet: 
+Pour comprendre le projet: \n
 Lire:
 
     -Le document "Présentation projet voiture intelligente" pour la présentation du projet.
