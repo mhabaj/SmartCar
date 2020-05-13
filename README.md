@@ -1,8 +1,7 @@
 # SmartCar
 Autonomous Smart car project
 
-Pour comprendre le projet: \n
-Lire:
+Pour comprendre le projet:
 
     -Le document "Présentation projet voiture intelligente" pour la présentation du projet.
     -Le document "Livret-Technique" pour l'explication du code et des techniques utilisés.
