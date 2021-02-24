@@ -1,5 +1,5 @@
 
-/*
+
 // Commandes compilation:
 //gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread    ---> IR Sensor
 ////gcc main.cpp -o mainExec -L/usr/local/lib -lwiringPi -lpthread   ---> Ultrasonic Sensor.
@@ -159,7 +159,7 @@ void Motor::TakeAction(string action)
 class CarClientSocket {
 private:
 
-	int sd;  // n° fd de la socket
+	int sd;  // nÂ° fd de la socket
 	int ret;
 	struct hostent *host;
 	struct sockaddr_in addrsrv;
@@ -312,7 +312,7 @@ class Sonar {
 private:
 	const int puceEnvoie = 23;
 	const int puceReception = 24;
-	const int MAX_DISTANCE = 60; //50 à cause des pertes et des faux-positives.
+	const int MAX_DISTANCE = 60; //50 Ã  cause des pertes et des faux-positives.
 	const int TempsMaxAttente = MAX_DISTANCE * 60;// calculate TempsMaxAttente according to the maximum measured distanc
 	long pingTime;
 	float distance;
